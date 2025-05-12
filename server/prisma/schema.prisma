@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id @default(uuid())
+  user_name  String
+  user_email String   @unique
+  password   String
+  role       Role     @default(student)
+
+  courses_created Course[] @relation("InstructorCourses")
+  course_progress  CourseProgress[]
+  orders           Order[]
+  student_courses  StudentCourse[]
+  course_students  CourseStudent[] @relation("StudentCourseRelation")
+}
+
+model Course {
+  id               String   @id
+  instructor_id    String
+  instructor_name  String
+  created_at       DateTime
+  title            String
+  category         String
+  level            String
+  primary_language String
+  subtitle         String
+  description      String
+  image            String
+  welcome_message  String
+  pricing          Decimal  @db.Decimal(10, 2)
+  objectives       String
+  is_published     Boolean  @default(false)
+
+  instructor       User?    @relation("InstructorCourses", fields: [instructor_id], references: [id])
+  lectures         CourseLecture[]
+  students         CourseStudent[]
+  progresses       CourseProgress[]
+  student_courses  StudentCourse[]
+  orders           Order[]
+}
+
+model CourseLecture {
+  id           String  @id
+  course_id    String
+  title        String
+  video_url    String
+  public_id    String
+  free_preview Boolean @default(false)
+
+  course       Course  @relation(fields: [course_id], references: [id])
+}
+
+model CourseStudent {
+  id             Int     @id @default(autoincrement())
+  course_id      String
+  student_id     String
+  student_name   String
+  student_email  String
+  paid_amount    Decimal @db.Decimal(10, 2)
+
+  course         Course  @relation(fields: [course_id], references: [id])
+  student        User    @relation("StudentCourseRelation", fields: [student_id], references: [id])
+}
+
+model CourseProgress {
+  id              String    @id @default(uuid())
+  user_id         String
+  course_id       String
+  completed       Boolean   @default(false)
+  completion_date DateTime?
+
+  user            User      @relation(fields: [user_id], references: [id])
+  course          Course    @relation(fields: [course_id], references: [id])
+  lectures        LectureProgress[]
+}
+
+model LectureProgress {
+  id                  Int      @id @default(autoincrement())
+  course_progress_id  String
+  lecture_id          String
+  viewed              Boolean  @default(false)
+  date_viewed         DateTime?
+
+  course_progress     CourseProgress @relation(fields: [course_progress_id], references: [id])
+}
+
+model Order {
+  id               String   @id
+  user_id          String
+  user_name        String
+  user_email       String
+  order_status     String
+  payment_method   String
+  payment_status   String
+  order_date       DateTime
+  payment_id       String
+  payer_id         String
+  instructor_id    String
+  instructor_name  String
+  course_image     String
+  course_title     String
+  course_id        String
+  course_pricing   Decimal  @db.Decimal(10, 2)
+
+  user             User     @relation(fields: [user_id], references: [id])
+  course           Course   @relation(fields: [course_id], references: [id])
+}
+
+model StudentCourse {
+  id               Int     @id @default(autoincrement())
+  user_id          String
+  course_id        String
+  title            String
+  instructor_id    String
+  instructor_name  String
+  date_of_purchase DateTime
+  course_image     String
+
+  user             User    @relation(fields: [user_id], references: [id])
+  course           Course  @relation(fields: [course_id], references: [id])
+}
+
+enum Role {
+  student
+  instructor
+  admin
+}

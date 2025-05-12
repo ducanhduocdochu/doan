@@ -22,6 +22,66 @@ export const signUpFormControls = [
   },
 ];
 
+export const signUpInstructorFormControls = [
+  {
+    name: "userName",
+    label: "User Name",
+    placeholder: "Enter your user name",
+    type: "text",
+    componentType: "input",
+  },
+  {
+    name: "userEmail",
+    label: "User Email",
+    placeholder: "Enter your user email",
+    type: "email",
+    componentType: "input",
+  },
+  {
+    name: "password",
+    label: "Password",
+    placeholder: "Enter your password",
+    type: "password",
+    componentType: "input",
+  },
+  {
+    name: "bio",
+    label: "Bio",
+    placeholder: "Short description about you",
+    type: "text",
+    componentType: "textarea",
+  },
+  {
+    name: "occupation",
+    label: "Occupation",
+    placeholder: "What is your current role?",
+    type: "text",
+    componentType: "input",
+  },
+  {
+    name: "education",
+    label: "Education",
+    placeholder: "Your educational background",
+    type: "text",
+    componentType: "input",
+  },
+  {
+    name: "language",
+    label: "Language",
+    placeholder: "Language(s) you will teach in",
+    type: "text",
+    componentType: "input",
+  },
+  {
+    name: "paypalEmail",
+    label: "PayPal Email",
+    placeholder: "Your PayPal email for payouts",
+    type: "email",
+    componentType: "input",
+  },
+];
+
+
 export const signInFormControls = [
   {
     name: "userEmail",
@@ -48,6 +108,17 @@ export const initialSignUpFormData = {
   userName: "",
   userEmail: "",
   password: "",
+};
+
+export const initialSignUpForInstructorFormData = {
+  userName: "",
+  userEmail: "",
+  password: "",
+  bio: "",
+  occupation: "",
+  education: "",
+  language: "",
+  paypalEmail: "",
 };
 
 export const languageOptions = [

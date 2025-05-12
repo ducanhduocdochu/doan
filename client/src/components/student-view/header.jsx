@@ -17,9 +17,9 @@ function StudentViewCommonHeader() {
     <header className="flex items-center justify-between p-4 border-b relative">
       <div className="flex items-center space-x-4">
         <Link to="/home" className="flex items-center hover:text-black">
-          <GraduationCap className="h-8 w-8 mr-4 " />
+          {/* <GraduationCap className="h-8 w-8 mr-4 " /> */}
           <span className="font-extrabold md:text-xl text-[14px]">
-            LMS LEARN
+            E-learning
           </span>
         </Link>
         <div className="flex items-center space-x-1">
@@ -32,7 +32,7 @@ function StudentViewCommonHeader() {
             }}
             className="text-[14px] md:text-[16px] font-medium"
           >
-            Explore Courses
+            Khám phá khóa học
           </Button>
         </div>
       </div>

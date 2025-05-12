@@ -16,12 +16,12 @@ const authenticate = (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
+  console.log(token, "token");
 
   try {
-    const payload = verifyToken(token, "JWT_SECRET");
+    const payload = verifyToken(token, process.env.JWT_SECRET || "your_fallback_secret");
 
     req.user = payload;
-
     next();
   } catch (e) {
     return res.status(401).json({

@@ -1,71 +1,77 @@
-const Course = require("../../models/Course");
-const StudentCourses = require("../../models/StudentCourses");
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
+// GET /student/course?category=&level=&primaryLanguage=&sortBy=
 const getAllStudentViewCourses = async (req, res) => {
   try {
     const {
-      category = [],
-      level = [],
-      primaryLanguage = [],
+      category = "",
+      level = "",
+      primaryLanguage = "",
       sortBy = "price-lowtohigh",
     } = req.query;
 
-    console.log(req.query, "req.query");
+    // Xử lý bộ lọc
+    const filters = {};
 
-    let filters = {};
-    if (category.length) {
-      filters.category = { $in: category.split(",") };
-    }
-    if (level.length) {
-      filters.level = { $in: level.split(",") };
-    }
-    if (primaryLanguage.length) {
-      filters.primaryLanguage = { $in: primaryLanguage.split(",") };
+    if (category) {
+      filters.category = { in: category.split(",") };
     }
 
-    let sortParam = {};
+    if (level) {
+      filters.level = { in: level.split(",") };
+    }
+
+    if (primaryLanguage) {
+      filters.primary_language = { in: primaryLanguage.split(",") };
+    }
+
+    // Xử lý sort
+    let orderBy = {};
     switch (sortBy) {
       case "price-lowtohigh":
-        sortParam.pricing = 1;
-
+        orderBy = { pricing: "asc" };
         break;
       case "price-hightolow":
-        sortParam.pricing = -1;
-
+        orderBy = { pricing: "desc" };
         break;
       case "title-atoz":
-        sortParam.title = 1;
-
+        orderBy = { title: "asc" };
         break;
       case "title-ztoa":
-        sortParam.title = -1;
-
+        orderBy = { title: "desc" };
         break;
-
       default:
-        sortParam.pricing = 1;
+        orderBy = { pricing: "asc" };
         break;
     }
 
-    const coursesList = await Course.find(filters).sort(sortParam);
+    const coursesList = await prisma.course.findMany({
+      where: filters,
+      orderBy,
+    });
 
     res.status(200).json({
       success: true,
       data: coursesList,
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "Some error occurred!",
     });
   }
 };
 
+// GET /student/course/:id
 const getStudentViewCourseDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const courseDetails = await Course.findById(id);
+
+    const courseDetails = await prisma.course.findUnique({
+      where: { id },
+    });
 
     if (!courseDetails) {
       return res.status(404).json({
@@ -80,32 +86,37 @@ const getStudentViewCourseDetails = async (req, res) => {
       data: courseDetails,
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "Some error occurred!",
     });
   }
 };
 
+// GET /student/course/check/:id/:studentId
 const checkCoursePurchaseInfo = async (req, res) => {
   try {
     const { id, studentId } = req.params;
-    const studentCourses = await StudentCourses.findOne({
-      userId: studentId,
+
+    const existing = await prisma.studentCourse.findFirst({
+      where: {
+        user_id: studentId,
+        course_id: id,
+      },
     });
 
-    const ifStudentAlreadyBoughtCurrentCourse =
-      studentCourses.courses.findIndex((item) => item.courseId === id) > -1;
+    const alreadyBought = !!existing;
+
     res.status(200).json({
       success: true,
-      data: ifStudentAlreadyBoughtCurrentCourse,
+      data: alreadyBought,
     });
   } catch (e) {
-    console.log(e);
+    console.error(e);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "Some error occurred!",
     });
   }
 };

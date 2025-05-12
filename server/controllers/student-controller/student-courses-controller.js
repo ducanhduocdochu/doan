@@ -1,21 +1,28 @@
-const StudentCourses = require("../../models/StudentCourses");
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 const getCoursesByStudentId = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const studentBoughtCourses = await StudentCourses.findOne({
-      userId: studentId,
+
+    const studentBoughtCourses = await prisma.studentCourse.findMany({
+      where: {
+        user_id: studentId,
+      },
+      include: {
+        course: true, // Lấy chi tiết khóa học nếu cần
+      },
     });
 
     res.status(200).json({
       success: true,
-      data: studentBoughtCourses.courses,
+      data: studentBoughtCourses,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({
       success: false,
-      message: "Some error occured!",
+      message: "Some error occurred!",
     });
   }
 };
