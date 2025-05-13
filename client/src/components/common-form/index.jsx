@@ -7,15 +7,18 @@ function CommonForm({
   formControls = [],
   formData,
   setFormData,
+  formErrors = {},              
+  setFormErrors = () => {},     
   isButtonDisabled = false,
 }) {
   return (
     <form onSubmit={handleSubmit}>
-      {/* render form controls here */}
       <FormControls
         formControls={formControls}
         formData={formData}
         setFormData={setFormData}
+        formErrors={formErrors}        
+        setFormErrors={setFormErrors}  
       />
       <Button disabled={isButtonDisabled} type="submit" className="mt-5 w-full">
         {buttonText || "Submit"}

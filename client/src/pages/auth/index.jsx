@@ -16,8 +16,14 @@ import { AuthContext } from "@/context/auth-context";
 import { GraduationCap } from "lucide-react";
 import { useContext, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  validateSignUpForm,
+  validateSignUpInstructorForm,
+} from "@/utils/validation";
 
 function AuthPage() {
+  const [signUpErrors, setSignUpErrors] = useState({});
+  const [signUpInstructorErrors, setSignUpInstructorErrors] = useState({});
   const [activeTab, setActiveTab] = useState("signin");
   const {
     signInFormData,
@@ -27,7 +33,7 @@ function AuthPage() {
     signUpInstructorFormData,
     setSignUpInstructorFormData,
     handleRegisterUser,
-    handleLoginUserForInstructor,
+    handleLSignUpUserForInstructor,
     handleLoginUser,
   } = useContext(AuthContext);
 
@@ -40,12 +46,25 @@ function AuthPage() {
   }
 
   function checkIfSignUpFormIsValid() {
-    return signUpFormData?.userName && signUpFormData?.userEmail && signUpFormData?.password;
+    return (
+      signUpFormData?.userName &&
+      signUpFormData?.userEmail &&
+      signUpFormData?.password
+    );
   }
 
   function checkIfSignUpInstructorFormIsValid() {
     const f = signUpInstructorFormData;
-    return f?.userName && f?.userEmail && f?.password && f?.bio && f?.occupation && f?.education && f?.language && f?.paypalEmail;
+    return (
+      f?.userName &&
+      f?.userEmail &&
+      f?.password &&
+      f?.bio &&
+      f?.occupation &&
+      f?.education &&
+      f?.language &&
+      f?.paypalEmail
+    );
   }
 
   return (
@@ -65,7 +84,9 @@ function AuthPage() {
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up (Student)</TabsTrigger>
-            <TabsTrigger value="signup-instructor">Sign Up (Instructor)</TabsTrigger>
+            <TabsTrigger value="signup-instructor">
+              Sign Up (Instructor)
+            </TabsTrigger>
           </TabsList>
 
           {/* Sign In Tab */}
@@ -99,10 +120,19 @@ function AuthPage() {
                 <CommonForm
                   formControls={signUpFormControls}
                   buttonText="Sign Up"
+                  formErrors={signUpErrors}
+                  setFormErrors={setSignUpErrors}
                   formData={signUpFormData}
                   setFormData={setSignUpFormData}
                   isButtonDisabled={!checkIfSignUpFormIsValid()}
-                  handleSubmit={() => handleRegisterUser("student")}
+                  handleSubmit={(e) => {
+                    e.preventDefault();
+                    const errors = validateSignUpForm(signUpFormData);
+                    setSignUpErrors(errors);
+                    if (Object.keys(errors).length === 0) {
+                      handleRegisterUser(e);
+                    }
+                  }}
                 />
               </CardContent>
             </Card>
@@ -120,9 +150,20 @@ function AuthPage() {
                   formControls={signUpInstructorFormControls}
                   buttonText="Register as Instructor"
                   formData={signUpInstructorFormData}
+                  formErrors={signUpInstructorErrors}
+                  setFormErrors={setSignUpInstructorErrors}
                   setFormData={setSignUpInstructorFormData}
                   isButtonDisabled={!checkIfSignUpInstructorFormIsValid()}
-                  handleSubmit={() => handleLoginUserForInstructor()}
+                  handleSubmit={(e) => {
+                    e.preventDefault();
+                    const errors = validateSignUpInstructorForm(
+                      signUpInstructorFormData
+                    );
+                    setSignUpInstructorErrors(errors);
+                    if (Object.keys(errors).length === 0) {
+                      handleLSignUpUserForInstructor(e);
+                    }
+                  }}
                 />
               </CardContent>
             </Card>

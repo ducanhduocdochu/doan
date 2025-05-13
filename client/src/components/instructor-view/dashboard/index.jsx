@@ -58,6 +58,8 @@ function InstructorDashboard({ listOfCourses }) {
 
   return (
     <div>
+    <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+    <div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {config.map((item, index) => (
           <Card key={index}>
@@ -104,7 +106,7 @@ function InstructorDashboard({ listOfCourses }) {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </div></div>
   );
 }
 

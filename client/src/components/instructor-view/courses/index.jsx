@@ -26,6 +26,8 @@ function InstructorCourses({ listOfCourses }) {
   } = useContext(InstructorContext);
 
   return (
+    <div>
+    <h1 className="text-3xl font-bold mb-8">Courses</h1>
     <Card>
       <CardHeader className="flex justify-between flex-row items-center">
         <CardTitle className="text-3xl font-extrabold">All Courses</CardTitle>
@@ -84,7 +86,7 @@ function InstructorCourses({ listOfCourses }) {
           </Table>
         </div>
       </CardContent>
-    </Card>
+    </Card></div>
   );
 }
 

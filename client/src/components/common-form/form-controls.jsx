@@ -9,20 +9,24 @@ import {
 } from "../ui/select";
 import { Textarea } from "../ui/textarea";
 
-function FormControls({ formControls = [], formData, setFormData }) {
+function FormControls({
+  formControls = [],
+  formData,
+  setFormData,
+  formErrors = {},
+}) {
   function renderComponentByType(getControlItem) {
-    let element = null;
-    const currentControlItemValue = formData[getControlItem.name] || "";
+    const currentValue = formData?.[getControlItem.name] || "";
 
     switch (getControlItem.componentType) {
       case "input":
-        element = (
+        return (
           <Input
             id={getControlItem.name}
             name={getControlItem.name}
             placeholder={getControlItem.placeholder}
             type={getControlItem.type}
-            value={currentControlItemValue}
+            value={currentValue}
             onChange={(event) =>
               setFormData({
                 ...formData,
@@ -31,9 +35,8 @@ function FormControls({ formControls = [], formData, setFormData }) {
             }
           />
         );
-        break;
       case "select":
-        element = (
+        return (
           <Select
             onValueChange={(value) =>
               setFormData({
@@ -41,30 +44,27 @@ function FormControls({ formControls = [], formData, setFormData }) {
                 [getControlItem.name]: value,
               })
             }
-            value={currentControlItemValue}
+            value={currentValue}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder={getControlItem.label} />
             </SelectTrigger>
             <SelectContent>
-              {getControlItem.options && getControlItem.options.length > 0
-                ? getControlItem.options.map((optionItem) => (
-                    <SelectItem key={optionItem.id} value={optionItem.id}>
-                      {optionItem.label}
-                    </SelectItem>
-                  ))
-                : null}
+              {getControlItem.options?.map((optionItem) => (
+                <SelectItem key={optionItem.id} value={optionItem.id}>
+                  {optionItem.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         );
-        break;
       case "textarea":
-        element = (
+        return (
           <Textarea
             id={getControlItem.name}
             name={getControlItem.name}
             placeholder={getControlItem.placeholder}
-            value={currentControlItemValue}
+            value={currentValue}
             onChange={(event) =>
               setFormData({
                 ...formData,
@@ -73,16 +73,29 @@ function FormControls({ formControls = [], formData, setFormData }) {
             }
           />
         );
-        break;
 
+      case "file":
+        return (
+          <Input
+            id={getControlItem.name}
+            name={getControlItem.name}
+            type="file"
+            onChange={(event) =>
+              setFormData({
+                ...formData,
+                [getControlItem.name]: event.target.files[0],
+              })
+            }
+          />
+        );
       default:
-        element = (
+        return (
           <Input
             id={getControlItem.name}
             name={getControlItem.name}
             placeholder={getControlItem.placeholder}
             type={getControlItem.type}
-            value={currentControlItemValue}
+            value={currentValue}
             onChange={(event) =>
               setFormData({
                 ...formData,
@@ -91,18 +104,20 @@ function FormControls({ formControls = [], formData, setFormData }) {
             }
           />
         );
-        break;
     }
-
-    return element;
   }
 
   return (
     <div className="flex flex-col gap-3">
-      {formControls.map((controleItem) => (
-        <div key={controleItem.name}>
-          <Label htmlFor={controleItem.name}>{controleItem.label}</Label>
-          {renderComponentByType(controleItem)}
+      {formControls.map((controlItem) => (
+        <div key={controlItem.name} className="space-y-1">
+          <Label htmlFor={controlItem.name}>{controlItem.label}</Label>
+          {renderComponentByType(controlItem)}
+          {formErrors?.[controlItem.name] && (
+            <p className="text-sm text-red-500">
+              {formErrors[controlItem.name]}
+            </p>
+          )}
         </div>
       ))}
     </div>

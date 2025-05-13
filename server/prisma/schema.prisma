@@ -13,12 +13,14 @@ model User {
   user_email String   @unique
   password   String
   role       Role     @default(student)
+  is_verify    Boolean     @default(false)
 
   courses_created Course[] @relation("InstructorCourses")
   course_progress  CourseProgress[]
   orders           Order[]
   student_courses  StudentCourse[]
   course_students  CourseStudent[] @relation("StudentCourseRelation")
+  instructor_profile  InstructorProfile?
 }
 
 model Course {
@@ -131,4 +133,17 @@ enum Role {
   student
   instructor
   admin
+}
+
+model InstructorProfile {
+  id           String   @id @default(uuid())
+  user_id      String   @unique
+  bio          String   @db.Text
+  occupation   String
+  education    String
+  language     String
+  paypal_email String
+  cv           String     // đường dẫn tới file hoặc URL
+
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

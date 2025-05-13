@@ -1,11 +1,12 @@
 import InstructorCourses from "@/components/instructor-view/courses";
 import InstructorDashboard from "@/components/instructor-view/dashboard";
+import InstructorProfile from "@/components/instructor-view/profile";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AuthContext } from "@/context/auth-context";
 import { InstructorContext } from "@/context/instructor-context";
 import { fetchInstructorCourseListService } from "@/services";
-import { BarChart, Book, LogOut } from "lucide-react";
+import { BarChart, Book, LogOut, UserCircle } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 
 function InstructorDashboardpage() {
@@ -25,6 +26,12 @@ function InstructorDashboardpage() {
 
   const menuItems = [
     {
+      icon: UserCircle,
+      label: "Profile",
+      value: "profile",
+      component: <InstructorProfile />,
+    },
+    {
       icon: BarChart,
       label: "Dashboard",
       value: "dashboard",
@@ -36,6 +43,7 @@ function InstructorDashboardpage() {
       value: "courses",
       component: <InstructorCourses listOfCourses={instructorCoursesList} />,
     },
+
     {
       icon: LogOut,
       label: "Logout",
@@ -77,7 +85,6 @@ function InstructorDashboardpage() {
       </aside>
       <main className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             {menuItems.map((menuItem) => (
               <TabsContent value={menuItem.value}>

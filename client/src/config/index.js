@@ -20,6 +20,13 @@ export const signUpFormControls = [
     type: "password",
     componentType: "input",
   },
+  {
+    name: "confirmPassword",
+    label: "Confirm password",
+    placeholder: "Enter again your password",
+    type: "password",
+    componentType: "input",
+  },
 ];
 
 export const signUpInstructorFormControls = [
@@ -41,6 +48,13 @@ export const signUpInstructorFormControls = [
     name: "password",
     label: "Password",
     placeholder: "Enter your password",
+    type: "password",
+    componentType: "input",
+  },
+  {
+    name: "confirmPassword",
+    label: "Confirm password",
+    placeholder: "Enter again your password",
     type: "password",
     componentType: "input",
   },
@@ -79,8 +93,14 @@ export const signUpInstructorFormControls = [
     type: "email",
     componentType: "input",
   },
+{
+  name: "cv",
+  label: "CV",
+  placeholder: "Upload your CV file",
+  type: "file",                  // ✅ đánh dấu là file
+  componentType: "file",         // ✅ thêm componentType mới
+}
 ];
-
 
 export const signInFormControls = [
   {
@@ -108,17 +128,20 @@ export const initialSignUpFormData = {
   userName: "",
   userEmail: "",
   password: "",
+  confirmPassword: "",
 };
 
 export const initialSignUpForInstructorFormData = {
   userName: "",
   userEmail: "",
   password: "",
+  confirmPassword: "",
   bio: "",
   occupation: "",
   education: "",
   language: "",
   paypalEmail: "",
+  cv: null,
 };
 
 export const languageOptions = [

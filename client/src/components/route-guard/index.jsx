@@ -3,30 +3,39 @@ import { Fragment } from "react";
 
 function RouteGuard({ authenticated, user, element }) {
   const location = useLocation();
+  const pathname = location.pathname;
 
-  console.log(authenticated, user, "useruser");
+  const isAtAuth = pathname.startsWith("/auth");
+  const isAtUnverified = pathname === "/auth/unverified";
+  const isInstructorRoute = pathname.startsWith("/instructor");
+  const isStudentRoute = pathname === "/" || pathname.startsWith("/home") || pathname.startsWith("/course") || pathname.startsWith("/student");
 
-  if (!authenticated && !location.pathname.includes("/auth")) {
+  // ❌ Chưa đăng nhập → Redirect về /auth
+  if (!authenticated && !isAtAuth) {
     return <Navigate to="/auth" />;
   }
 
-  if (
-    authenticated &&
-    user?.role !== "instructor" &&
-    (location.pathname.includes("instructor") ||
-      location.pathname.includes("/auth"))
-  ) {
+  // ❌ Đã đăng nhập nhưng chưa verify → Chuyển về trang unverified
+  if (authenticated && user?.isVerify === false && !isAtUnverified) {
+    return <Navigate to="/auth/unverified" />;
+  }
+
+  // ✅ Nếu là admin → Có thể vào mọi route
+  if (authenticated && user?.role === "admin") {
+    return <Fragment>{element}</Fragment>;
+  }
+
+  // ❌ Nếu là student mà vào /instructor → Redirect về /home
+  if (authenticated && user?.role === "student" && isInstructorRoute) {
     return <Navigate to="/home" />;
   }
 
-  if (
-    authenticated &&
-    user.role === "instructor" &&
-    !location.pathname.includes("instructor")
-  ) {
+  // ❌ Nếu là instructor mà vào student route → Redirect về /instructor
+  if (authenticated && user?.role === "instructor" && isStudentRoute && !isAtAuth) {
     return <Navigate to="/instructor" />;
   }
 
+  // ✅ Trường hợp hợp lệ
   return <Fragment>{element}</Fragment>;
 }
 
