@@ -21,6 +21,7 @@ model User {
   student_courses  StudentCourse[]
   course_students  CourseStudent[] @relation("StudentCourseRelation")
   instructor_profile  InstructorProfile?
+  favorite_courses FavoriteCourse[]
 }
 
 model Course {
@@ -46,6 +47,7 @@ model Course {
   progresses       CourseProgress[]
   student_courses  StudentCourse[]
   orders           Order[]
+  favorited_by_users FavoriteCourse[]
 }
 
 model CourseLecture {
@@ -146,4 +148,16 @@ model InstructorProfile {
   cv           String     // đường dẫn tới file hoặc URL
 
   user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model FavoriteCourse {
+  id        Int    @id @default(autoincrement())
+  user_id   String
+  course_id String
+  createdAt DateTime @default(now())
+
+  user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, course_id]) // đảm bảo 1 user chỉ yêu thích 1 khóa học 1 lần
 }

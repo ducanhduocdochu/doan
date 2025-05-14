@@ -9,7 +9,8 @@ function RouteGuard({ authenticated, user, element }) {
   const isAtUnverified = pathname === "/auth/unverified";
   const isInstructorRoute = pathname.startsWith("/instructor");
   const isStudentRoute = pathname === "/" || pathname.startsWith("/home") || pathname.startsWith("/course") || pathname.startsWith("/student");
-
+  console.log(authenticated)
+  console.log(isAtAuth)
   // ❌ Chưa đăng nhập → Redirect về /auth
   if (!authenticated && !isAtAuth) {
     return <Navigate to="/auth" />;

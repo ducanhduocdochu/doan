@@ -93,7 +93,16 @@ export async function mediaBulkUploadService(formData, onProgressCallback) {
 
 export async function fetchStudentViewCourseListService(query) {
   const { data } = await axiosInstance.get(`/student/course/get?${query}`);
+  return data;
+}
 
+export async function addFavoriteCourseService(idCourse) {
+  const { data } = await axiosInstance.post(`/student/course/favorite-course/add/${idCourse}`);
+  return data;
+}
+
+export async function removeFavoriteCourseService(idCourse) {
+  const { data } = await axiosInstance.delete(`/student/course/favorite-course/remove/${idCourse}`);
   return data;
 }
 

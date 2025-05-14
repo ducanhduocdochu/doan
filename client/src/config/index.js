@@ -155,6 +155,7 @@ export const languageOptions = [
   { id: "portuguese", label: "Portuguese" },
   { id: "arabic", label: "Arabic" },
   { id: "russian", label: "Russian" },
+  { id: "vietnamese", label: "Vietnamese" },
 ];
 
 export const courseLevelOptions = [
@@ -174,6 +175,13 @@ export const courseCategories = [
   { id: "mobile-development", label: "Mobile Development" },
   { id: "game-development", label: "Game Development" },
   { id: "software-engineering", label: "Software Engineering" },
+  { id: "language", label: "Language" },
+  { id: "business", label: "Business" },
+  { id: "marketing", label: "Marketing" },
+  { id: "finance", label: "Finance" },
+  { id: "photography", label: "Photography" },
+  { id: "graphic-design", label: "Graphic Design" },
+  { id: "personal-development", label: "Personal Development" },
 ];
 
 export const courseLandingPageFormControls = [
@@ -278,3 +286,41 @@ export const filterOptions = {
   level: courseLevelOptions,
   primaryLanguage: languageOptions,
 };
+
+export const getLevelColor = (level) => {
+  switch (level.toLowerCase()) {
+    case "beginner":
+      return "text-green-600 font-semibold";
+    case "intermediate":
+      return "text-yellow-600 font-semibold";
+    case "advanced":
+      return "text-red-600 font-semibold";
+    default:
+      return "text-gray-600";
+  }
+}
+
+export const getCategoryColor = (id) =>{
+  const colorMap = {
+    "web-development": "border-blue-500 text-blue-500",
+    "backend-development": "border-indigo-500 text-indigo-500",
+    "data-science": "border-purple-500 text-purple-500",
+    "machine-learning": "border-pink-500 text-pink-500",
+    "artificial-intelligence": "border-red-500 text-red-500",
+    "cloud-computing": "border-cyan-500 text-cyan-500",
+    "cyber-security": "border-orange-500 text-orange-500",
+    "mobile-development": "border-green-500 text-green-500",
+    "game-development": "border-amber-500 text-amber-500",
+    "software-engineering": "border-emerald-500 text-emerald-500",
+    "language": "border-teal-500 text-teal-500",
+    "business": "border-yellow-500 text-yellow-500",
+    "marketing": "border-pink-600 text-pink-600",
+    "finance": "border-lime-500 text-lime-500",
+    "photography": "border-violet-500 text-violet-500",
+    "graphic-design": "border-fuchsia-500 text-fuchsia-500",
+    "personal-development": "border-rose-500 text-rose-500",
+  };
+
+  return colorMap[id] || "border-gray-400 text-gray-600";
+}
+

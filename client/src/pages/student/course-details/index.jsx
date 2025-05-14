@@ -12,12 +12,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import VideoPlayer from "@/components/video-player";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
+import { toast } from "@/hooks/use-toast";
 import {
+  addFavoriteCourseService,
   checkCoursePurchaseInfoService,
   createPaymentService,
   fetchStudentViewCourseDetailsService,
+  removeFavoriteCourseService,
 } from "@/services";
-import { CheckCircle, Globe, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle, Globe, Heart, Lock, PlayCircle } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
@@ -30,7 +33,7 @@ function StudentViewCourseDetailsPage() {
     loadingState,
     setLoadingState,
   } = useContext(StudentContext);
-
+  console.log(studentViewCourseDetails, "studentViewCourseDetails");
   const { auth } = useContext(AuthContext);
 
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
@@ -55,7 +58,7 @@ function StudentViewCourseDetailsPage() {
     //   navigate(`/course-progress/${currentCourseDetailsId}`);
     //   return;
     // }
-
+    console.log(currentCourseDetailsId);
     const response = await fetchStudentViewCourseDetailsService(
       currentCourseDetailsId
     );
@@ -71,7 +74,7 @@ function StudentViewCourseDetailsPage() {
 
   function handleSetFreePreview(getCurrentVideoInfo) {
     console.log(getCurrentVideoInfo);
-    setDisplayCurrentVideoFreePreview(getCurrentVideoInfo?.videoUrl);
+    setDisplayCurrentVideoFreePreview(getCurrentVideoInfo?.video_url);
   }
 
   async function handleCreatePayment() {
@@ -85,11 +88,11 @@ function StudentViewCourseDetailsPage() {
       orderDate: new Date(),
       paymentId: "",
       payerId: "",
-      instructorId: studentViewCourseDetails?.instructorId,
-      instructorName: studentViewCourseDetails?.instructorName,
+      instructorId: studentViewCourseDetails?.instructor_id,
+      instructorName: studentViewCourseDetails?.instructor_name,
       courseImage: studentViewCourseDetails?.image,
       courseTitle: studentViewCourseDetails?.title,
-      courseId: studentViewCourseDetails?._id,
+      courseId: studentViewCourseDetails?.id,
       coursePricing: studentViewCourseDetails?.pricing,
     };
 
@@ -132,8 +135,8 @@ function StudentViewCourseDetailsPage() {
 
   const getIndexOfFreePreviewUrl =
     studentViewCourseDetails !== null
-      ? studentViewCourseDetails?.curriculum?.findIndex(
-          (item) => item.freePreview
+      ? studentViewCourseDetails?.lectures?.findIndex(
+          (item) => item.free_preview
         )
       : -1;
 
@@ -145,17 +148,20 @@ function StudentViewCourseDetailsPage() {
         </h1>
         <p className="text-xl mb-4">{studentViewCourseDetails?.subtitle}</p>
         <div className="flex items-center space-x-4 mt-2 text-sm">
-          <span>Created By {studentViewCourseDetails?.instructorName}</span>
-          <span>Created On {studentViewCourseDetails?.date.split("T")[0]}</span>
+          <span>Created By {studentViewCourseDetails?.instructor_name}</span>
+          <span>
+            Created On {studentViewCourseDetails?.created_at.split("T")[0]}
+          </span>
           <span className="flex items-center">
             <Globe className="mr-1 h-4 w-4" />
             {studentViewCourseDetails?.primaryLanguage}
           </span>
           <span>
-            {studentViewCourseDetails?.students.length}{" "}
+            {/* {studentViewCourseDetails?.students.length}{" "}
             {studentViewCourseDetails?.students.length <= 1
               ? "Student"
-              : "Students"}
+              : "Students"} */}
+            0 students
           </span>
         </div>
       </div>
@@ -186,32 +192,31 @@ function StudentViewCourseDetailsPage() {
           </Card>
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Course Curriculum</CardTitle>
+              <CardTitle>Course Lectures</CardTitle>
             </CardHeader>
             <CardContent>
-              {studentViewCourseDetails?.curriculum?.map(
-                (curriculumItem, index) => (
-                  <li
-                    className={`${
-                      curriculumItem?.freePreview
-                        ? "cursor-pointer"
-                        : "cursor-not-allowed"
-                    } flex items-center mb-4`}
-                    onClick={
-                      curriculumItem?.freePreview
-                        ? () => handleSetFreePreview(curriculumItem)
-                        : null
-                    }
-                  >
-                    {curriculumItem?.freePreview ? (
-                      <PlayCircle className="mr-2 h-4 w-4" />
-                    ) : (
-                      <Lock className="mr-2 h-4 w-4" />
-                    )}
-                    <span>{curriculumItem?.title}</span>
-                  </li>
-                )
-              )}
+              {studentViewCourseDetails?.lectures?.map((lecture, index) => (
+                <li
+                  key={lecture.id}
+                  className={`${
+                    lecture?.free_preview
+                      ? "cursor-pointer"
+                      : "cursor-not-allowed"
+                  } flex items-center mb-4`}
+                  onClick={
+                    lecture?.free_preview
+                      ? () => handleSetFreePreview(lecture)
+                      : null
+                  }
+                >
+                  {lecture?.free_preview ? (
+                    <PlayCircle className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Lock className="mr-2 h-4 w-4" />
+                  )}
+                  <span>{lecture?.title}</span>
+                </li>
+              ))}
             </CardContent>
           </Card>
         </main>
@@ -222,19 +227,63 @@ function StudentViewCourseDetailsPage() {
                 <VideoPlayer
                   url={
                     getIndexOfFreePreviewUrl !== -1
-                      ? studentViewCourseDetails?.curriculum[
+                      ? studentViewCourseDetails?.lectures[
                           getIndexOfFreePreviewUrl
-                        ].videoUrl
+                        ].video_url
                       : ""
                   }
                   width="450px"
                   height="200px"
                 />
               </div>
-              <div className="mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <span className="text-3xl font-bold">
                   ${studentViewCourseDetails?.pricing}
                 </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+
+                    const courseId = studentViewCourseDetails?.id;
+
+                    if (studentViewCourseDetails?.isFavorite) {
+                      const res = await removeFavoriteCourseService(courseId);
+                      if (res?.success) {
+                        setStudentViewCourseDetails((prev) => ({
+                          ...prev,
+                          isFavorite: false,
+                        }));
+                        toast({
+                          title: "Removed from Favorites",
+                          description:
+                            "Removed from your favorites successfully.",
+                          variant: "default", // ✅ màu xanh / nhạt
+                        });
+                      }
+                    } else {
+                      const res = await addFavoriteCourseService(courseId);
+                      if (res?.success) {
+                        setStudentViewCourseDetails((prev) => ({
+                          ...prev,
+                          isFavorite: true,
+                        }));
+                        toast({
+                          title: "Added to Favorites",
+                          description: "Added to your favorites successfully.",
+                          variant: "default", // ✅ màu xanh / nhạt
+                        });
+                      }
+                    }
+                  }}
+                >
+                  {studentViewCourseDetails?.isFavorite ? (
+                    <Heart className="w-5 h-5 text-red-500 fill-red-500 cursor-pointer" />
+                  ) : (
+                    <Heart className="w-5 h-5 text-red-500 cursor-pointer" />
+                  )}
+                </Button>
               </div>
               <Button onClick={handleCreatePayment} className="w-full">
                 Buy Now
@@ -262,10 +311,11 @@ function StudentViewCourseDetailsPage() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            {studentViewCourseDetails?.curriculum
-              ?.filter((item) => item.freePreview)
+            {studentViewCourseDetails?.lectures
+              ?.filter((item) => item.free_preview)
               .map((filteredItem) => (
                 <p
+                  key={filteredItem.id}
                   onClick={() => handleSetFreePreview(filteredItem)}
                   className="cursor-pointer text-[16px] font-medium"
                 >

@@ -91,7 +91,8 @@ function StudentHomePage() {
           {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
             studentViewCoursesList.map((courseItem) => (
               <div
-                onClick={() => handleCourseNavigate(courseItem?._id)}
+                onClick={() => handleCourseNavigate(courseItem?.id)}
+                key={courseItem?.id}
                 className="border rounded-lg overflow-hidden shadow cursor-pointer"
               >
                 <img
