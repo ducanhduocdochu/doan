@@ -75,7 +75,7 @@ function StudentHomePage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {courseCategories.map((categoryItem) => (
             <Button
-              className="justify-start"
+              className={`justify-start ${getCategoryColor(toSlug(categoryItem.label))}`}
               variant="outline"
               key={categoryItem.id}
               onClick={() => handleNavigateToCoursesPage(categoryItem.id)}

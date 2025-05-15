@@ -324,3 +324,13 @@ export const getCategoryColor = (id) =>{
   return colorMap[id] || "border-gray-400 text-gray-600";
 }
 
+export const toSlug = (text) => {
+  return text
+    .toLowerCase()             // viết thường hết
+    .trim()                   // bỏ khoảng trắng đầu cuối
+    .replace(/\s+/g, "-")     // thay khoảng trắng (1 hoặc nhiều) thành dấu '-'
+    .replace(/[^\w\-]+/g, "") // loại bỏ ký tự không phải chữ số, chữ cái, hoặc dấu '-'
+    .replace(/\-\-+/g, "-");  // loại bỏ dấu '-' lặp lại liên tiếp
+}
+
+

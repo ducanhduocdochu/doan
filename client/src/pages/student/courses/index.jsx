@@ -11,7 +11,12 @@ import {
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { filterOptions, getCategoryColor, getLevelColor, sortOptions } from "@/config";
+import {
+  filterOptions,
+  getCategoryColor,
+  getLevelColor,
+  sortOptions,
+} from "@/config";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
 import {
@@ -23,6 +28,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  Star,
+  StarHalf,
+  StarOff,
 } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -60,6 +68,26 @@ function StudentViewCoursesPage() {
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);
 
+  function renderStars(rating) {
+    console.log("rating", rating);
+  const stars = [];
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating - fullStars >= 0.5;
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+  for (let i = 0; i < fullStars; i++) {
+    stars.push(<Star key={`full-${i}`} className="w-4 h-4 text-yellow-400 fill-yellow-400" />);
+  }
+  if (hasHalfStar) {
+    stars.push(<StarHalf key="half" className="w-4 h-4 text-yellow-400 fill-yellow-400" />);
+  }
+  for (let i = 0; i < emptyStars; i++) {
+    stars.push(<StarOff key={`empty-${i}`} className="w-4 h-4 text-yellow-400" />);
+  }
+
+  return stars;
+}
+
   function handleFilterOnChange(getSectionId, getCurrentOption) {
     let cpyFilters = { ...filters };
     const indexOfCurrentSeection =
@@ -85,7 +113,6 @@ function StudentViewCoursesPage() {
   }
 
   async function fetchAllStudentViewCourses(filters, sort) {
-    console.log("filters");
     const query = new URLSearchParams({
       ...filters,
       sortBy: sort,
@@ -94,6 +121,7 @@ function StudentViewCoursesPage() {
       search: searchTerm,
     });
     const response = await fetchStudentViewCourseListService(query);
+    console.log(response?.data?.courses);
     if (response?.success) {
       setStudentViewCoursesList(response?.data?.courses || []);
       setTotalCourses(response?.data?.totalItems || 0);
@@ -244,24 +272,27 @@ function StudentViewCoursesPage() {
                         {courseItem?.title}
                       </CardTitle>
                       <div className="flex items-center gap-2">
-                                          <div className="flex flex-wrap gap-2">
-  <span
-    className={`text-xs border px-2 py-1 rounded-full ${getCategoryColor(
-      courseItem?.category
-    )}`}
-  >
-    {courseItem?.category
-      ?.split("-")
-      .map((word) => word[0].toUpperCase() + word.slice(1))
-      .join(" ")}
-  </span>
-</div>
-                      <p className="text-sm text-gray-600 mb-[2px]">
-                        Created By{" "}
-                        <span className="font-bold">
-                          {courseItem?.instructor_name}
-                        </span>
-                      </p></div>
+                        <div className="flex flex-wrap gap-2">
+                          <span
+                            className={`text-xs border px-2 py-1 rounded-full ${getCategoryColor(
+                              courseItem?.category
+                            )}`}
+                          >
+                            {courseItem?.category
+                              ?.split("-")
+                              .map(
+                                (word) => word[0].toUpperCase() + word.slice(1)
+                              )
+                              .join(" ")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-[2px]">
+                          Created By{" "}
+                          <span className="font-bold">
+                            {courseItem?.instructor_name}
+                          </span>
+                        </p>
+                      </div>
                       <p className="text-[16px] mt-3 mb-2">
                         {`${courseItem?.lectures?.length} ${
                           courseItem?.lectures?.length <= 1
@@ -274,9 +305,28 @@ function StudentViewCoursesPage() {
                           Level
                         </span>
                       </p>
-                      <p className="font-bold text-lg">
-                        ${courseItem?.pricing}
-                      </p>
+                      <div className="flex items-center gap-1 mb-2">
+  {(courseItem.averageRating || 0)}
+  {renderStars(courseItem.averageRating || 0)}
+  <span className="text-sm text-gray-500 ml-1">
+    ({courseItem.ratingCount || 0})
+  </span>
+</div>
+                      <div className="flex items-center gap-2 mt-2">
+  <p className="text-lg font-bold text-red-600">
+    ${courseItem?.pricingAfterDiscount}
+  </p>
+  {courseItem.discountPct > 0 && (
+    <>
+      <p className="text-sm line-through text-gray-500">
+        ${courseItem?.pricing}
+      </p>
+      <p className="text-sm text-green-600 font-semibold">
+        -{courseItem.discountPct}%
+      </p>
+    </>
+  )}
+</div>
                     </div>
                   </CardContent>
                 </Card>

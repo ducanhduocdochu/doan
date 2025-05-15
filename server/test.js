@@ -1,19 +1,57 @@
-const mysql = require("mysql2/promise");
+INSERT INTO CourseLecture
+(id, course_id, title, video_url, public_id, free_preview, chapterNumber, chapterTitle)
+VALUES
+(1,  '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 1 - Giới thiệu', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-1', TRUE, 1, 'Chương 1: Khởi đầu'),
+(2,  '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 2 - Tổng quan', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-2', TRUE, 1, 'Chương 1: Khởi đầu'),
+(3,  '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 3 - Các khái niệm cơ bản', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-3', FALSE, 1, 'Chương 1: Khởi đầu'),
+(4,  '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 4 - Thực hành đầu tiên', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-4', FALSE, 1, 'Chương 1: Khởi đầu'),
+(5,  '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 5 - Tổng kết chương 1', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-5', FALSE, 1, 'Chương 1: Khởi đầu'),
 
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'Tducanh263@',
-  database: 'lms',
-});
+(6,  '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 1 - Phần mở rộng', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-6', TRUE, 2, 'Chương 2: Nâng cao 1'),
+(7,  '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 2 - Kỹ thuật cơ bản', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-7', TRUE, 2, 'Chương 2: Nâng cao 1'),
+(8,  '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 3 - Ví dụ thực tế', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-8', FALSE, 2, 'Chương 2: Nâng cao 1'),
+(9,  '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 4 - Thực hành nâng cao', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-9', FALSE, 2, 'Chương 2: Nâng cao 1'),
+(10, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 5 - Mẹo và thủ thuật', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-10', FALSE, 2, 'Chương 2: Nâng cao 1'),
+(11, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 6 - Xử lý lỗi', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-11', FALSE, 2, 'Chương 2: Nâng cao 1'),
+(12, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 7 - Ứng dụng thực tế', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-12', FALSE, 2, 'Chương 2: Nâng cao 1'),
+(13, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 8 - Tổng kết', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-13', FALSE, 2, 'Chương 2: Nâng cao 1'),
+(14, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 9 - Câu hỏi thường gặp', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-14', FALSE, 2, 'Chương 2: Nâng cao 1'),
+(15, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 10 - Bài tập', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-15', FALSE, 2, 'Chương 2: Nâng cao 1'),
 
-async function testConnection() {
-  try {
-    const [rows] = await pool.query("SELECT 1 + 1 AS result");
-    console.log("✅ MySQL Connected, Test Result:", rows);
-  } catch (err) {
-    console.error("❌ MySQL connection error:", err);
-  }
-}
+(16, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 1 - Tổng quan chuyên sâu', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-16', TRUE, 3, 'Chương 3: Nâng cao 2'),
+(17, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 2 - Phân tích dữ liệu', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-17', TRUE, 3, 'Chương 3: Nâng cao 2'),
+(18, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 3 - Thuật toán', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-18', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(19, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 4 - Xử lý ngoại lệ', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-19', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(20, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 5 - Thực hành chuyên sâu', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-20', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(21, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 6 - Kỹ thuật nâng cao', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-21', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(22, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 7 - Ví dụ phức tạp', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-22', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(23, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 8 - Phân tích trường hợp', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-23', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(24, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 9 - Bài tập thực hành', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-24', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(25, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 10 - Hướng dẫn tối ưu', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-25', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(26, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 11 - Giới thiệu thư viện', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-26', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(27, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 12 - Ứng dụng thực tế', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-27', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(28, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 13 - Tổng kết chương', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-28', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(29, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 14 - Câu hỏi & trả lời', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-29', FALSE, 3, 'Chương 3: Nâng cao 2'),
+(30, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 15 - Đánh giá cuối khóa', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-30', FALSE, 3, 'Chương 3: Nâng cao 2'),
 
-testConnection();
+(31, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 1 - Tổng quan cuối khóa', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-31', TRUE, 4, 'Chương 4: Tổng kết 1'),
+(32, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 2 - Phân tích nâng cao', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-32', TRUE, 4, 'Chương 4: Tổng kết 1'),
+(33, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 3 - Ví dụ điển hình', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-33', FALSE, 4, 'Chương 4: Tổng kết 1'),
+(34, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 4 - Thực hành cuối', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-34', FALSE, 4, 'Chương 4: Tổng kết 1'),
+(35, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 5 - Mẹo chuyên sâu', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-35', FALSE, 4, 'Chương 4: Tổng kết 1'),
+(36, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 6 - Hướng dẫn sử dụng', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-36', FALSE, 4, 'Chương 4: Tổng kết 1'),
+(37, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 7 - Câu hỏi thường gặp', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-37', FALSE, 4, 'Chương 4: Tổng kết 1'),
+(38, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 8 - Tài liệu bổ sung', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-38', FALSE, 4, 'Chương 4: Tổng kết 1'),
+(39, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 9 - Thực hành bổ sung', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-39', FALSE, 4, 'Chương 4: Tổng kết 1'),
+(40, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 10 - Tổng kết chương', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-40', FALSE, 4, 'Chương 4: Tổng kết 1'),
+
+(41, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 1 - Bài tập nâng cao', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-41', TRUE, 5, 'Chương 5: Bài tập'),
+(42, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 2 - Đề thi thử', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-42', TRUE, 5, 'Chương 5: Bài tập'),
+(43, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 3 - Mẹo làm bài', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-43', FALSE, 5, 'Chương 5: Bài tập'),
+(44, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 4 - Đáp án mẫu', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-44', FALSE, 5, 'Chương 5: Bài tập'),
+(45, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 5 - Phân tích đáp án', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-45', FALSE, 5, 'Chương 5: Bài tập'),
+(46, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 6 - Thực hành thêm', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-46', FALSE, 5, 'Chương 5: Bài tập'),
+(47, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 7 - Bài tập nhóm', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-47', FALSE, 5, 'Chương 5: Bài tập'),
+(48, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 8 - Bài tập cuối', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-48', FALSE, 5, 'Chương 5: Bài tập'),
+(49, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 9 - Đánh giá cuối', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-49', FALSE, 5, 'Chương 5: Bài tập'),
+(50, '7ae87b79-30d3-11f0-a3a2-005056c00001', 'Bài 10 - Tổng kết khóa', 'hhttps://www.youtube.com/watch?v=dQw4w9WgXcQ', 'public-50', FALSE, 5, 'Chương 5: Bài tập');

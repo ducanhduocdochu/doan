@@ -1,4 +1,4 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 // GET /student/course?category=&level=&primaryLanguage=&sortBy=
@@ -27,7 +27,9 @@ const getAllStudentViewCourses = async (req, res) => {
     }
 
     if (primaryLanguage) {
-      filters.AND.push({ primary_language: { in: primaryLanguage.split(",") } });
+      filters.AND.push({
+        primary_language: { in: primaryLanguage.split(",") },
+      });
     }
 
     if (search) {
@@ -74,6 +76,8 @@ const getAllStudentViewCourses = async (req, res) => {
               instructor_profile: true,
             },
           },
+          ratings: true,
+          discount: true,
         },
         skip: (pageNumber - 1) * pageSize,
         take: pageSize,
@@ -81,10 +85,36 @@ const getAllStudentViewCourses = async (req, res) => {
       prisma.course.count({ where: filters }),
     ]);
 
+    const coursesWithRating = coursesList.map((course) => {
+      const discountPct = course.discount ? course.discount.discount_pct : 0;
+      const pricingAfterDiscount = (
+        course.pricing -
+        (discountPct * course.pricing) / 100
+      ).toFixed(2);
+      const ratingValues = course.ratings.map((r) => r.rating);
+      const ratingCount = ratingValues.length;
+      const averageRating =
+        ratingCount > 0
+          ? Number(
+              (
+                ratingValues.reduce((sum, r) => sum + r, 0) / ratingCount
+              ).toFixed(1)
+            )
+          : 0;
+
+      return {
+        ...course,
+        pricingAfterDiscount,
+        discountPct,
+        averageRating,
+        ratingCount,
+      };
+    });
+
     res.status(200).json({
       success: true,
       data: {
-        courses: coursesList,
+        courses: coursesWithRating,
         totalItems,
       },
     });
@@ -101,22 +131,55 @@ const getAllStudentViewCourses = async (req, res) => {
 const getStudentViewCourseDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.user.id; 
+    const userId = req.user.id;
 
     const courseDetails = await prisma.course.findUnique({
       where: { id },
       include: {
-        lectures: true,
+        lectures: {
+          orderBy: {
+            id: "asc",
+          },
+        },
         instructor: {
           select: {
             user_name: true,
             user_email: true,
-            instructor_profile: true
-          }
-        }
+            instructor_profile: true,
+          },
+        },
+        discount: true,
+        ratings: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                user_name: true,
+                user_email: true,
+              },
+            },
+          },
+        },
       },
     });
 
+    const discountPct = courseDetails.discount
+      ? courseDetails.discount.discount_pct
+      : 0;
+    const pricingAfterDiscount = (
+      courseDetails.pricing -
+      (discountPct * courseDetails.pricing) / 100
+    ).toFixed(2);
+    const ratingValues = courseDetails.ratings.map((r) => r.rating);
+    const ratingCount = ratingValues.length;
+    const averageRating =
+      ratingCount > 0
+        ? Number(
+            (ratingValues.reduce((sum, r) => sum + r, 0) / ratingCount).toFixed(
+              1
+            )
+          )
+        : 0;
     if (!courseDetails) {
       return res.status(404).json({
         success: false,
@@ -132,8 +195,8 @@ const getStudentViewCourseDetails = async (req, res) => {
           user_id_course_id: {
             user_id: userId,
             course_id: id,
-          }
-        }
+          },
+        },
       });
       isFavorite = !!favorite;
     }
@@ -142,10 +205,13 @@ const getStudentViewCourseDetails = async (req, res) => {
       success: true,
       data: {
         ...courseDetails,
+        pricingAfterDiscount,
+        discountPct,
+        averageRating,
+        ratingCount,
         isFavorite,
       },
     });
-
   } catch (e) {
     console.error(e);
     res.status(500).json({
@@ -154,7 +220,6 @@ const getStudentViewCourseDetails = async (req, res) => {
     });
   }
 };
-
 
 // GET /student/course/check/:id/:studentId
 const checkCoursePurchaseInfo = async (req, res) => {
@@ -184,11 +249,13 @@ const checkCoursePurchaseInfo = async (req, res) => {
 };
 
 const addFavoriteCourse = async (req, res) => {
-  const {courseId } = req.params;
+  const { courseId } = req.params;
   const userId = req.user.id;
 
   if (!userId || !courseId) {
-    return res.status(400).json({ success: false, message: "Missing userId or courseId" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing userId or courseId" });
   }
 
   try {
@@ -206,7 +273,9 @@ const addFavoriteCourse = async (req, res) => {
     });
   } catch (err) {
     if (err.code === "P2002") {
-      return res.status(409).json({ success: false, message: "Course already in favorites" });
+      return res
+        .status(409)
+        .json({ success: false, message: "Course already in favorites" });
     }
 
     console.error("Add favorite error:", err);
@@ -216,10 +285,12 @@ const addFavoriteCourse = async (req, res) => {
 
 const removeFavoriteCourse = async (req, res) => {
   const { courseId } = req.params;
-  const userId = req.user.id; 
+  const userId = req.user.id;
 
   if (!userId || !courseId) {
-    return res.status(400).json({ success: false, message: "Missing userId or courseId" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing userId or courseId" });
   }
 
   try {
@@ -247,5 +318,5 @@ module.exports = {
   getStudentViewCourseDetails,
   checkCoursePurchaseInfo,
   removeFavoriteCourse,
-  addFavoriteCourse
+  addFavoriteCourse,
 };

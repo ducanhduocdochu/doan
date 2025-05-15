@@ -1,3 +1,5 @@
+import LecturesGrouped from "@/components/student-view/lecture-group";
+import ReviewsSection from "@/components/student-view/review";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -10,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import VideoPlayer from "@/components/video-player";
+import { courseCategories, getCategoryColor, toSlug } from "@/config";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
 import { toast } from "@/hooks/use-toast";
@@ -20,7 +23,19 @@ import {
   fetchStudentViewCourseDetailsService,
   removeFavoriteCourseService,
 } from "@/services";
-import { CheckCircle, Globe, Heart, Lock, PlayCircle } from "lucide-react";
+import {
+  BookOpen,
+  CheckCircle,
+  Globe,
+  Heart,
+  Lock,
+  MessageCircle,
+  PlayCircle,
+  Star,
+  StarHalf,
+  StarOff,
+  Users,
+} from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
@@ -36,6 +51,17 @@ function StudentViewCourseDetailsPage() {
   console.log(studentViewCourseDetails, "studentViewCourseDetails");
   const { auth } = useContext(AuthContext);
 
+  const [showAllObjectives, setShowAllObjectives] = useState(false);
+  const objectivesArray = studentViewCourseDetails?.objectives
+    ? studentViewCourseDetails.objectives.split(",")
+    : [];
+
+  const maxShow = 6;
+  const isLongObj = objectivesArray.length > maxShow;
+  const displayedObjectives = showAllObjectives
+    ? objectivesArray
+    : objectivesArray.slice(0, maxShow);
+
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
     useState(null);
   const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
@@ -43,6 +69,47 @@ function StudentViewCourseDetailsPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
+
+  const [expanded, setExpanded] = useState(false);
+  const limit = 200;
+
+  const description = studentViewCourseDetails?.description || "";
+  const isLong = description.length > limit;
+
+  const displayedText = expanded
+    ? description
+    : description.slice(0, limit) + (isLong ? "..." : "");
+
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating - fullStars >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star
+          key={`full-${i}`}
+          className="w-4 h-4 text-yellow-400 fill-yellow-400"
+        />
+      );
+    }
+    if (hasHalfStar) {
+      stars.push(
+        <StarHalf
+          key="half"
+          className="w-4 h-4 text-yellow-400 fill-yellow-400"
+        />
+      );
+    }
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <StarOff key={`empty-${i}`} className="w-4 h-4 text-yellow-400" />
+      );
+    }
+
+    return stars;
+  };
 
   async function fetchStudentViewCourseDetails() {
     // const checkCoursePurchaseInfoResponse =
@@ -147,7 +214,7 @@ function StudentViewCourseDetailsPage() {
           {studentViewCourseDetails?.title}
         </h1>
         <p className="text-xl mb-4">{studentViewCourseDetails?.subtitle}</p>
-        <div className="flex items-center space-x-4 mt-2 text-sm">
+        <div className="flex items-center space-x-4 mt-2 text-sm flex-wrap">
           <span>Created By {studentViewCourseDetails?.instructor_name}</span>
           <span>
             Created On {studentViewCourseDetails?.created_at.split("T")[0]}
@@ -158,11 +225,33 @@ function StudentViewCourseDetailsPage() {
           </span>
           <span>
             {/* {studentViewCourseDetails?.students.length}{" "}
-            {studentViewCourseDetails?.students.length <= 1
-              ? "Student"
-              : "Students"} */}
+          {studentViewCourseDetails?.students.length <= 1
+            ? "Student"
+            : "Students"} */}
             0 students
           </span>
+        </div>
+        <div className="flex items-center space-x-4 mt-2 text-sm flex-wrap">
+          <span className="flex items-center space-x-1">
+            {studentViewCourseDetails?.averageRating || 0}
+            {renderStars(studentViewCourseDetails?.averageRating || 0)}
+            <span className="text-gray-400 ml-1">
+              ({studentViewCourseDetails?.ratingCount || 0})
+            </span>
+          </span>
+
+          <div className="flex flex-wrap gap-2">
+            <span
+              className={`text-xs border px-2 py-1 rounded-full cursor-pointer ${getCategoryColor(
+                studentViewCourseDetails?.category
+              )}`}
+            >
+              {studentViewCourseDetails?.category
+                ?.split("-")
+                .map((word) => word[0].toUpperCase() + word.slice(1))
+                .join(" ")}
+            </span>
+          </div>
         </div>
       </div>
       <div className="flex flex-col md:flex-row gap-8 mt-8">
@@ -173,51 +262,47 @@ function StudentViewCourseDetailsPage() {
             </CardHeader>
             <CardContent>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                {studentViewCourseDetails?.objectives
-                  .split(",")
-                  .map((objective, index) => (
-                    <li key={index} className="flex items-start">
-                      <CheckCircle className="mr-2 h-5 w-5 text-green-500 flex-shrink-0" />
-                      <span>{objective}</span>
-                    </li>
-                  ))}
+                {displayedObjectives.map((objective, index) => (
+                  <li key={index} className="flex items-start">
+                    <CheckCircle className="mr-2 h-5 w-5 text-green-500 flex-shrink-0" />
+                    <span>{objective}</span>
+                  </li>
+                ))}
               </ul>
+              {isLongObj && (
+                <button
+                  className="mt-2 text-blue-600 hover:underline focus:outline-none"
+                  onClick={() => setShowAllObjectives(!showAllObjectives)}
+                >
+                  {showAllObjectives ? "Show less" : "Load more"}
+                </button>
+              )}
             </CardContent>
           </Card>
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Course Description</CardTitle>
             </CardHeader>
-            <CardContent>{studentViewCourseDetails?.description}</CardContent>
+            <CardContent>
+              <p>{displayedText}</p>
+              {isLong && (
+                <button
+                  onClick={() => setExpanded(!expanded)}
+                  className="mt-2 text-blue-600 hover:underline focus:outline-none"
+                >
+                  {expanded ? "Show less" : "Load more"}
+                </button>
+              )}
+            </CardContent>
           </Card>
           <Card className="mb-8">
             <CardHeader>
               <CardTitle>Course Lectures</CardTitle>
             </CardHeader>
-            <CardContent>
-              {studentViewCourseDetails?.lectures?.map((lecture, index) => (
-                <li
-                  key={lecture.id}
-                  className={`${
-                    lecture?.free_preview
-                      ? "cursor-pointer"
-                      : "cursor-not-allowed"
-                  } flex items-center mb-4`}
-                  onClick={
-                    lecture?.free_preview
-                      ? () => handleSetFreePreview(lecture)
-                      : null
-                  }
-                >
-                  {lecture?.free_preview ? (
-                    <PlayCircle className="mr-2 h-4 w-4" />
-                  ) : (
-                    <Lock className="mr-2 h-4 w-4" />
-                  )}
-                  <span>{lecture?.title}</span>
-                </li>
-              ))}
-            </CardContent>
+            <LecturesGrouped
+              lectures={studentViewCourseDetails?.lectures || []}
+              handleSetFreePreview={handleSetFreePreview}
+            />
           </Card>
         </main>
         <aside className="w-full md:w-[500px]">
@@ -236,16 +321,69 @@ function StudentViewCourseDetailsPage() {
                   height="200px"
                 />
               </div>
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-3xl font-bold">
-                  ${studentViewCourseDetails?.pricing}
-                </span>
+              <div className="mt-4 mb-4 text-sm text-gray-700 space-y-3">
+                <p className="font-bold text-base mb-2">
+                  This course includes:
+                </p>
+                <ul className="list-none space-y-2">
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-gray-700 flex-shrink-0" />
+                    <span>5 giờ video theo yêu cầu</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-gray-700 flex-shrink-0" />
+                    <span>2 bài viết</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-gray-700 flex-shrink-0" />
+                    <span>8 tài nguyên có thể tải xuống</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-gray-700 flex-shrink-0" />
+                    <span>Truy cập trên thiết bị di động và TV</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-gray-700 flex-shrink-0" />
+                    <span>Quyền truy cập đầy đủ suốt đời</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-gray-700 flex-shrink-0" />
+                    <span>Giấy chứng nhận hoàn thành</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="mb-4 flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-1 mb-2">
+                    {studentViewCourseDetails?.averageRating || 0}
+                    {renderStars(studentViewCourseDetails?.averageRating || 0)}
+                    <span className="text-sm text-gray-500 ml-1">
+                      ({studentViewCourseDetails?.ratingCount || 0})
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-3xl font-bold text-red-600">
+                      ${studentViewCourseDetails?.pricingAfterDiscount}
+                    </span>
+                    {studentViewCourseDetails?.discountPct > 0 && (
+                      <>
+                        <span className="text-lg line-through text-gray-500">
+                          ${studentViewCourseDetails?.pricing}
+                        </span>
+                        <span className="text-md text-green-600 font-semibold">
+                          -{studentViewCourseDetails?.discountPct}%
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={async (e) => {
                     e.stopPropagation();
-
                     const courseId = studentViewCourseDetails?.id;
 
                     if (studentViewCourseDetails?.isFavorite) {
@@ -259,7 +397,7 @@ function StudentViewCourseDetailsPage() {
                           title: "Removed from Favorites",
                           description:
                             "Removed from your favorites successfully.",
-                          variant: "default", // ✅ màu xanh / nhạt
+                          variant: "default",
                         });
                       }
                     } else {
@@ -272,7 +410,7 @@ function StudentViewCourseDetailsPage() {
                         toast({
                           title: "Added to Favorites",
                           description: "Added to your favorites successfully.",
-                          variant: "default", // ✅ màu xanh / nhạt
+                          variant: "default",
                         });
                       }
                     }
@@ -285,13 +423,112 @@ function StudentViewCourseDetailsPage() {
                   )}
                 </Button>
               </div>
+
               <Button onClick={handleCreatePayment} className="w-full">
                 Buy Now
+              </Button>
+              <Button
+                onClick={() => {
+                  toast({
+                    title: "Added to Cart",
+                    description: "Course added to your cart successfully.",
+                    variant: "default",
+                  });
+                }}
+                className="w-full mt-2"
+                variant="outline"
+              >
+                Add to Cart
               </Button>
             </CardContent>
           </Card>
         </aside>
       </div>
+      <CardContent>
+        <div className="text-gray-700 space-y-6">
+          <section>
+            <h3 className="text-lg font-semibold mb-2">Yêu cầu</h3>
+            <ul className="list-disc list-inside space-y-1">
+              <li>
+                Có kiến thức cơ bản về IT & lập trình nói chung tuy nhiên không
+                bắt buộc.
+              </li>
+              <li>
+                Bạn không cần phải biết code vì tất cả code mẫu được cung cấp
+                bởi giảng viên.
+              </li>
+              <li>
+                Những bạn có kiến thức cơ bản về Server như Linux, Windows có
+                khả năng sẽ học nhanh hơn.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="text-lg font-semibold mb-2">Mô tả</h3>
+            <p className="whitespace-pre-line">
+              {`Chào mừng đến với khoá học AWS Cloud for beginner - Tiếng Việt!
+
+Khoá học này tập trung vào những kiến thưc cơ bản liên quan tới Cloud Computing và AWS, lịch sử hình thành và phát triển của AWS, các dịch vụ cơ bản trên AWS, đặc trưng và usecase áp dụng các dịch vụ trong thực tế.
+
+Khoá học thiết kế đan xen giữa lý thuyết và thực hành, giúp các bạn không chỉ nắm rõ các dịch vụ của AWS mà còn tự tin thao tác, có thể vận dụng trong dự án thực tế cũng như phát triển sản phẩm của riêng bạn.
+
+Sau khoá học này bạn sẽ tự tin làm việc với các dịch vụ:
+- Networking (VPC, Subnet, Security Group, Route53, CloudFront,...)
+- Computing (EC2, Lambda, LoadBalancer)
+- Database (SQL and No SQL)
+- Storage (S3, EBS, EFS)
+- Security (Identity & Access Manager, Security concepts, Encryption, Application Protection)
+- Monitoring and Auditing (CloudWatch, CloudTrail)
+- Container (Docker), ECR, ECS
+- Messaging Services (SNS, SQS, SES)
+- Infra as Code (basic)
+- Backup and Recovery
+
+Đặc biệt, bạn còn được hướng dẫn cách thiết kế & triển khai hệ thống theo các Best Practice của AWS, với bài tập lớn cuối khoá.`}
+            </p>
+          </section>
+
+          <section>
+            <h3 className="text-lg font-semibold mb-2">Đối tượng</h3>
+            <ul className="list-disc list-inside space-y-1">
+              <li>
+                Sinh viên, Lập trình viên, Kỹ sư hệ thống muốn tìm hiểu Cloud &
+                AWS.
+              </li>
+              <li>
+                Những người muốn nâng cao kỹ năng và tìm kiếm cơ hội việc làm
+                mới.
+              </li>
+              <li>
+                Người đã có kiến thức cơ bản về Cloud & AWS muốn đào sâu kỹ
+                thuật và thực hành.
+              </li>
+              <li>
+                Người đã học qua các khoá lý thuyết (vd: SAA) muốn thực hành
+                nhiều hơn với AWS.
+              </li>
+            </ul>
+          </section>
+        </div>
+      </CardContent>
+      <section className="py-8 px-4 lg:px-8 bg-gray-100">
+        <h2 className="text-2xl font-bold mb-6">Course Categories</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {courseCategories.map((categoryItem) => (
+            <Button
+              className={`justify-start ${getCategoryColor(
+                toSlug(categoryItem.label)
+              )}`}
+              variant="outline"
+              key={categoryItem.id}
+              // onClick={() => handleNavigateToCoursesPage(categoryItem.id)}
+            >
+              {categoryItem.label}
+            </Button>
+          ))}
+        </div>
+      </section>
       <Dialog
         open={showFreePreviewDialog}
         onOpenChange={() => {
@@ -332,6 +569,82 @@ function StudentViewCourseDetailsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ReviewsSection
+        studentViewCourseDetails={studentViewCourseDetails}
+        renderStars={renderStars}
+      />
+      <div className="mt-12 bg-gray-900 text-white p-8 rounded-lg flex flex-col md:flex-row md:items-center md:gap-6">
+        <img
+          src={
+            studentViewCourseDetails?.instructor.user?.avatarUrl ||
+            "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+          }
+          alt="Ảnh giảng viên"
+          className="w-24 h-24 rounded-full object-cover border-2 border-white"
+          onError={(e) => {
+            e.currentTarget.onerror = null; // tránh lặp lại khi lỗi ảnh
+            e.currentTarget.src =
+              "https://cdn-icons-png.flaticon.com/512/149/149071.png";
+          }}
+        />
+
+        <div className="mt-4 md:mt-0">
+          <Button className='pl-0'>
+            
+          <h3 className="text-2xl font-semibold">
+            {studentViewCourseDetails?.instructor.user_name ||
+              "Giảng viên ẩn danh"}
+          </h3>
+          </Button>
+
+          {studentViewCourseDetails?.instructor
+            ?.user_email && (
+            <p>
+              <span className="font-semibold">Gmail: </span>
+              <a
+                href={`mailto:${studentViewCourseDetails.instructor.user_email}`}
+                className="text-blue-400 hover:underline"
+              >
+                {
+                  studentViewCourseDetails.instructor.instructor_profile
+                    .paypal_email
+                }
+              </a>
+            </p>
+          )}
+
+          <div className="flex items-center gap-1 mt-2">
+        <Star className="w-5 h-5 text-yellow-400" />
+        <span className="ml-4">Xếp hạng trung bình: </span>
+        <span>{studentViewCourseDetails?.averageRating?.toFixed(1) || "0.0"}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <MessageCircle className="w-5 h-5 text-blue-400" />
+        <span className="ml-4">Số đánh giá: </span>
+        <span>{studentViewCourseDetails?.ratingCount || 0}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <Users className="w-5 h-5 text-green-400" />
+        <span className="ml-4">Số học viên: </span>
+        <span>{studentViewCourseDetails?.students?.length || 0}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <BookOpen className="w-5 h-5 text-purple-400" />
+        <span className="ml-4">Số khóa học: </span>
+        <span>{studentViewCourseDetails?.instructor?.courses_created?.length || 0}</span>
+      </div>
+        </div>
+      </div>
+          <p className="mb-4 mt-4 whitespace-pre-wrap leading-relaxed w-full">
+      {studentViewCourseDetails?.instructor.instructor_profile?.bio || "Không có tiểu sử"}
+    </p>
+    <Button
+          onClick={() => setShowDialog(true)}
+          variant="outline"
+          className="mt-4 w-full"
+        >
+          Hiển thị thêm
+        </Button>
     </div>
   );
 }
