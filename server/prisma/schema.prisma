@@ -23,6 +23,7 @@ model User {
   instructor_profile  InstructorProfile?
   favorite_courses FavoriteCourse[]
   ratings CourseRating[]
+  cart_courses CartCourse[]
 }
 
 model Course {
@@ -51,6 +52,7 @@ model Course {
   favorited_by_users FavoriteCourse[]
   ratings   CourseRating[]
   discount  CourseDiscount?
+  in_cart_by_users CartCourse[]
 }
 
 model CourseLecture {
@@ -88,6 +90,7 @@ model CourseProgress {
   user            User      @relation(fields: [user_id], references: [id])
   course          Course    @relation(fields: [course_id], references: [id])
   lectures        LectureProgress[]
+  @@unique([user_id, course_id])
 }
 
 model LectureProgress {
@@ -192,3 +195,14 @@ model CourseDiscount {
   course Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
 }
 
+model CartCourse {
+  id        Int      @id @default(autoincrement())
+  user_id   String
+  course_id String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, course_id]) // mỗi user chỉ thêm một lần mỗi khóa học vào giỏ
+}

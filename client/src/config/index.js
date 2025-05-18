@@ -1,3 +1,5 @@
+import { Star, StarHalf, StarOff } from "lucide-react";
+
 export const signUpFormControls = [
   {
     name: "userName",
@@ -93,13 +95,13 @@ export const signUpInstructorFormControls = [
     type: "email",
     componentType: "input",
   },
-{
-  name: "cv",
-  label: "CV",
-  placeholder: "Upload your CV file",
-  type: "file",                  // ✅ đánh dấu là file
-  componentType: "file",         // ✅ thêm componentType mới
-}
+  {
+    name: "cv",
+    label: "CV",
+    placeholder: "Upload your CV file",
+    type: "file", // ✅ đánh dấu là file
+    componentType: "file", // ✅ thêm componentType mới
+  },
 ];
 
 export const signInFormControls = [
@@ -298,9 +300,9 @@ export const getLevelColor = (level) => {
     default:
       return "text-gray-600";
   }
-}
+};
 
-export const getCategoryColor = (id) =>{
+export const getCategoryColor = (id) => {
   const colorMap = {
     "web-development": "border-blue-500 text-blue-500",
     "backend-development": "border-indigo-500 text-indigo-500",
@@ -312,25 +314,25 @@ export const getCategoryColor = (id) =>{
     "mobile-development": "border-green-500 text-green-500",
     "game-development": "border-amber-500 text-amber-500",
     "software-engineering": "border-emerald-500 text-emerald-500",
-    "language": "border-teal-500 text-teal-500",
-    "business": "border-yellow-500 text-yellow-500",
-    "marketing": "border-pink-600 text-pink-600",
-    "finance": "border-lime-500 text-lime-500",
-    "photography": "border-violet-500 text-violet-500",
+    language: "border-teal-500 text-teal-500",
+    business: "border-yellow-500 text-yellow-500",
+    marketing: "border-pink-600 text-pink-600",
+    finance: "border-lime-500 text-lime-500",
+    photography: "border-violet-500 text-violet-500",
     "graphic-design": "border-fuchsia-500 text-fuchsia-500",
     "personal-development": "border-rose-500 text-rose-500",
   };
 
   return colorMap[id] || "border-gray-400 text-gray-600";
-}
+};
 
 export const toSlug = (text) => {
   return text
-    .toLowerCase()             // viết thường hết
-    .trim()                   // bỏ khoảng trắng đầu cuối
-    .replace(/\s+/g, "-")     // thay khoảng trắng (1 hoặc nhiều) thành dấu '-'
+    .toLowerCase() // viết thường hết
+    .trim() // bỏ khoảng trắng đầu cuối
+    .replace(/\s+/g, "-") // thay khoảng trắng (1 hoặc nhiều) thành dấu '-'
     .replace(/[^\w\-]+/g, "") // loại bỏ ký tự không phải chữ số, chữ cái, hoặc dấu '-'
-    .replace(/\-\-+/g, "-");  // loại bỏ dấu '-' lặp lại liên tiếp
-}
+    .replace(/\-\-+/g, "-"); // loại bỏ dấu '-' lặp lại liên tiếp
+};
 
 

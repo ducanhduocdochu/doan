@@ -96,6 +96,21 @@ export async function fetchStudentViewCourseListService(query) {
   return data;
 }
 
+export async function fetchStudentViewCourseCartListService() {
+  const { data } = await axiosInstance.get(`/student/course/cart-courses`);
+  return data;
+}
+
+export async function fetchStudentViewCourseFavoriteListService() {
+  const { data } = await axiosInstance.get(`/student/course/favorite-courses`);
+  return data;
+}
+
+export async function fetchStudentViewCoursePurchased() {
+  const { data } = await axiosInstance.get(`/student/course/purchased`);
+  return data;
+}
+
 export async function addFavoriteCourseService(idCourse) {
   const { data } = await axiosInstance.post(`/student/course/favorite-course/add/${idCourse}`);
   return data;
@@ -113,6 +128,24 @@ export async function fetchStudentViewCourseDetailsService(courseId) {
 
   return data;
 }
+
+export async function addCourseToCartService(courseId) {
+  const { data } = await axiosInstance.post(
+    `/student/course/cart-courses/add/${courseId}`
+  );
+
+  return data;
+}
+
+
+export async function removeCourseFromCartService(courseId) {
+  const { data } = await axiosInstance.delete(
+    `/student/course/cart-courses/remove/${courseId}`
+  );
+
+  return data;
+}
+
 
 export async function checkCoursePurchaseInfoService(courseId, studentId) {
   const { data } = await axiosInstance.get(
@@ -142,15 +175,16 @@ export async function captureAndFinalizePaymentService(
   return data;
 }
 
-export async function fetchStudentBoughtCoursesService(studentId) {
+export async function fetchStudentBoughtCoursesService(studentId, query) {
   const { data } = await axiosInstance.get(
-    `/student/courses-bought/get/${studentId}`
+    `/student/courses-bought/get/${studentId}?${query}`
   );
 
   return data;
 }
 
 export async function getCurrentCourseProgressService(userId, courseId) {
+  console.log(userId, courseId, "userId, courseId");
   const { data } = await axiosInstance.get(
     `/student/course-progress/get/${userId}/${courseId}`
   );

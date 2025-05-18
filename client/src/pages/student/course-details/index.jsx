@@ -12,16 +12,25 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import VideoPlayer from "@/components/video-player";
-import { courseCategories, getCategoryColor, toSlug } from "@/config";
+import {
+  courseCategories,
+  getCategoryColor,
+  getLevelColor,
+  toSlug,
+} from "@/config";
 import { AuthContext } from "@/context/auth-context";
 import { StudentContext } from "@/context/student-context";
 import { toast } from "@/hooks/use-toast";
 import {
+  addCourseToCartService,
   addFavoriteCourseService,
   checkCoursePurchaseInfoService,
+  fetchStudentViewCourseCartListService,
   createPaymentService,
   fetchStudentViewCourseDetailsService,
+  fetchStudentViewCourseListService,
   removeFavoriteCourseService,
+  fetchStudentViewCourseFavoriteListService,
 } from "@/services";
 import {
   BookOpen,
@@ -47,38 +56,12 @@ function StudentViewCourseDetailsPage() {
     setCurrentCourseDetailsId,
     loadingState,
     setLoadingState,
+    setStudentCartCoursesList,
+    setStudentViewCoursesList,
+    studentViewCoursesList,
+    setStudentFavoriteCoursesList
   } = useContext(StudentContext);
-  console.log(studentViewCourseDetails, "studentViewCourseDetails");
   const { auth } = useContext(AuthContext);
-
-  const [showAllObjectives, setShowAllObjectives] = useState(false);
-  const objectivesArray = studentViewCourseDetails?.objectives
-    ? studentViewCourseDetails.objectives.split(",")
-    : [];
-
-  const maxShow = 6;
-  const isLongObj = objectivesArray.length > maxShow;
-  const displayedObjectives = showAllObjectives
-    ? objectivesArray
-    : objectivesArray.slice(0, maxShow);
-
-  const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
-    useState(null);
-  const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
-  const [approvalUrl, setApprovalUrl] = useState("");
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const location = useLocation();
-
-  const [expanded, setExpanded] = useState(false);
-  const limit = 200;
-
-  const description = studentViewCourseDetails?.description || "";
-  const isLong = description.length > limit;
-
-  const displayedText = expanded
-    ? description
-    : description.slice(0, limit) + (isLong ? "..." : "");
 
   const renderStars = (rating) => {
     const stars = [];
@@ -111,6 +94,43 @@ function StudentViewCourseDetailsPage() {
     return stars;
   };
 
+  useEffect(() => {
+    async function fetchAllStudentViewCourses() {
+      const response = await fetchStudentViewCourseListService();
+      if (response?.success) setStudentViewCoursesList(response?.data?.courses);
+    }
+    fetchAllStudentViewCourses();
+  }, []);
+
+  const [showAllObjectives, setShowAllObjectives] = useState(false);
+  const objectivesArray = studentViewCourseDetails?.objectives
+    ? studentViewCourseDetails.objectives.split(",")
+    : [];
+
+  const maxShow = 6;
+  const isLongObj = objectivesArray.length > maxShow;
+  const displayedObjectives = showAllObjectives
+    ? objectivesArray
+    : objectivesArray.slice(0, maxShow);
+
+  const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
+    useState(null);
+  const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
+  const [approvalUrl, setApprovalUrl] = useState("");
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const location = useLocation();
+
+  const [expanded, setExpanded] = useState(false);
+  const limit = 200;
+
+  const description = studentViewCourseDetails?.description || "";
+  const isLong = description.length > limit;
+
+  const displayedText = expanded
+    ? description
+    : description.slice(0, limit) + (isLong ? "..." : "");
+
   async function fetchStudentViewCourseDetails() {
     // const checkCoursePurchaseInfoResponse =
     //   await checkCoursePurchaseInfoService(
@@ -125,7 +145,6 @@ function StudentViewCourseDetailsPage() {
     //   navigate(`/course-progress/${currentCourseDetailsId}`);
     //   return;
     // }
-    console.log(currentCourseDetailsId);
     const response = await fetchStudentViewCourseDetailsService(
       currentCourseDetailsId
     );
@@ -140,10 +159,9 @@ function StudentViewCourseDetailsPage() {
   }
 
   function handleSetFreePreview(getCurrentVideoInfo) {
-    console.log(getCurrentVideoInfo);
     setDisplayCurrentVideoFreePreview(getCurrentVideoInfo?.video_url);
+    setShowFreePreviewDialog(true);
   }
-
   async function handleCreatePayment() {
     const paymentPayload = {
       userId: auth?.user?._id,
@@ -399,6 +417,12 @@ function StudentViewCourseDetailsPage() {
                             "Removed from your favorites successfully.",
                           variant: "default",
                         });
+
+                        const response = await fetchStudentViewCourseFavoriteListService();
+                              if (response?.success) {
+                                setStudentFavoriteCoursesList(response?.data || []);
+                                setLoadingState(false);
+                              }
                       }
                     } else {
                       const res = await addFavoriteCourseService(courseId);
@@ -412,6 +436,12 @@ function StudentViewCourseDetailsPage() {
                           description: "Added to your favorites successfully.",
                           variant: "default",
                         });
+
+                        const response = await fetchStudentViewCourseFavoriteListService();
+      if (response?.success) {
+        setStudentFavoriteCoursesList(response?.data || []);
+        setLoadingState(false);
+      }
                       }
                     }
                   }}
@@ -428,17 +458,37 @@ function StudentViewCourseDetailsPage() {
                 Buy Now
               </Button>
               <Button
-                onClick={() => {
-                  toast({
-                    title: "Added to Cart",
-                    description: "Course added to your cart successfully.",
-                    variant: "default",
-                  });
-                }}
+                onClick={async () => {
+                  const res = await addCourseToCartService(
+                    studentViewCourseDetails?.id
+                  );
+                  if (res?.success) {
+                    toast({
+                      title: "Added to Cart",
+                      description: "Course added to your cart successfully.",
+                      variant: "default",
+                    });
+
+                    setStudentViewCourseDetails((prev) => ({
+                      ...prev,
+                      isInCart: true,
+                    }));
+
+                    const res = await fetchStudentViewCourseCartListService();
+                  if (res.success) {
+                    console.log("res", res?.data.courses);
+                    setStudentCartCoursesList(res?.data.courses || []);
+                  }
+                }}}
+                disabled={studentViewCourseDetails?.isInCart}
                 className="w-full mt-2"
-                variant="outline"
+                variant={
+                  studentViewCourseDetails?.isInCart ? "secondary" : "outline"
+                }
               >
-                Add to Cart
+                {studentViewCourseDetails?.isInCart
+                  ? "Đã thêm vào giỏ hàng"
+                  : "Thêm vào giỏ hàng"}
               </Button>
             </CardContent>
           </Card>
@@ -547,18 +597,12 @@ Sau khoá học này bạn sẽ tự tin làm việc với các dịch vụ:
               height="200px"
             />
           </div>
-          <div className="flex flex-col gap-2">
-            {studentViewCourseDetails?.lectures
-              ?.filter((item) => item.free_preview)
-              .map((filteredItem) => (
-                <p
-                  key={filteredItem.id}
-                  onClick={() => handleSetFreePreview(filteredItem)}
-                  className="cursor-pointer text-[16px] font-medium"
-                >
-                  {filteredItem?.title}
-                </p>
-              ))}
+          <div className="mt-4">
+            <LecturesGrouped
+              lectures={studentViewCourseDetails?.lectures || []}
+              handleSetFreePreview={handleSetFreePreview}
+              isPreviewDialog={true}
+            />
           </div>
           <DialogFooter className="sm:justify-start">
             <DialogClose asChild>
@@ -589,16 +633,14 @@ Sau khoá học này bạn sẽ tự tin làm việc với các dịch vụ:
         />
 
         <div className="mt-4 md:mt-0">
-          <Button className='pl-0'>
-            
-          <h3 className="text-2xl font-semibold">
-            {studentViewCourseDetails?.instructor.user_name ||
-              "Giảng viên ẩn danh"}
-          </h3>
+          <Button className="pl-0">
+            <h3 className="text-2xl font-semibold">
+              {studentViewCourseDetails?.instructor.user_name ||
+                "Giảng viên ẩn danh"}
+            </h3>
           </Button>
 
-          {studentViewCourseDetails?.instructor
-            ?.user_email && (
+          {studentViewCourseDetails?.instructor?.user_email && (
             <p>
               <span className="font-semibold">Gmail: </span>
               <a
@@ -614,37 +656,246 @@ Sau khoá học này bạn sẽ tự tin làm việc với các dịch vụ:
           )}
 
           <div className="flex items-center gap-1 mt-2">
-        <Star className="w-5 h-5 text-yellow-400" />
-        <span className="ml-4">Xếp hạng trung bình: </span>
-        <span>{studentViewCourseDetails?.averageRating?.toFixed(1) || "0.0"}</span>
-      </div>
-      <div className="flex items-center gap-1">
-        <MessageCircle className="w-5 h-5 text-blue-400" />
-        <span className="ml-4">Số đánh giá: </span>
-        <span>{studentViewCourseDetails?.ratingCount || 0}</span>
-      </div>
-      <div className="flex items-center gap-1">
-        <Users className="w-5 h-5 text-green-400" />
-        <span className="ml-4">Số học viên: </span>
-        <span>{studentViewCourseDetails?.students?.length || 0}</span>
-      </div>
-      <div className="flex items-center gap-1">
-        <BookOpen className="w-5 h-5 text-purple-400" />
-        <span className="ml-4">Số khóa học: </span>
-        <span>{studentViewCourseDetails?.instructor?.courses_created?.length || 0}</span>
-      </div>
+            <Star className="w-5 h-5 text-yellow-400" />
+            <span className="ml-4">Xếp hạng trung bình: </span>
+            <span>
+              {studentViewCourseDetails?.averageRating?.toFixed(1) || "0.0"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <MessageCircle className="w-5 h-5 text-blue-400" />
+            <span className="ml-4">Số đánh giá: </span>
+            <span>{studentViewCourseDetails?.ratingCount || 0}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Users className="w-5 h-5 text-green-400" />
+            <span className="ml-4">Số học viên: </span>
+            <span>{studentViewCourseDetails?.students?.length || 0}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <BookOpen className="w-5 h-5 text-purple-400" />
+            <span className="ml-4">Số khóa học: </span>
+            <span>
+              {studentViewCourseDetails?.instructor?.courses_created?.length ||
+                0}
+            </span>
+          </div>
         </div>
       </div>
-          <p className="mb-4 mt-4 whitespace-pre-wrap leading-relaxed w-full">
-      {studentViewCourseDetails?.instructor.instructor_profile?.bio || "Không có tiểu sử"}
-    </p>
-    <Button
-          onClick={() => setShowDialog(true)}
-          variant="outline"
-          className="mt-4 w-full"
-        >
-          Hiển thị thêm
-        </Button>
+      <p className="mb-4 mt-4 whitespace-pre-wrap leading-relaxed w-full">
+        {studentViewCourseDetails?.instructor.instructor_profile?.bio ||
+          "Không có tiểu sử"}
+      </p>
+      <Button
+        onClick={() => setShowDialog(true)}
+        variant="outline"
+        className="mt-4 w-full"
+      >
+        Hiển thị thêm
+      </Button>
+
+      <section className="py-12 px-4 lg:px-8">
+        <h2 className="text-2xl font-bold mb-6">Khóa học cùng tác giả</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
+            studentViewCoursesList.map((courseItem) => (
+              <div
+                onClick={() => handleCourseNavigate(courseItem?.id)}
+                key={courseItem?.id}
+                className="border rounded-lg overflow-hidden shadow cursor-pointer"
+              >
+                <img
+                  src={courseItem?.image || "/default-course.jpg"}
+                  width={300}
+                  height={150}
+                  className="w-full h-40 object-cover"
+                  alt={courseItem?.title}
+                />
+                <div className="p-4">
+                  <h3 className="font-bold text-lg mb-1 line-clamp-2">
+                    {courseItem?.title}
+                  </h3>
+
+                  <p className="text-sm text-gray-600 mb-1">
+                    Created by{" "}
+                    <span className="font-semibold">
+                      {courseItem?.instructorName}
+                    </span>
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span
+                      className={`text-xs border px-2 py-1 rounded-full ${getCategoryColor(
+                        courseItem?.category
+                      )}`}
+                    >
+                      {courseItem?.category
+                        ?.split("-")
+                        .map((word) => word[0].toUpperCase() + word.slice(1))
+                        .join(" ")}
+                    </span>
+
+                    <span className="text-xs text-gray-500">
+                      {courseItem?.lectures?.length || 0} lectures
+                    </span>
+
+                    <span
+                      className={`text-xs ${getLevelColor(courseItem?.level)}`}
+                    >
+                      {courseItem?.level?.charAt(0).toUpperCase() +
+                        courseItem?.level?.slice(1)}{" "}
+                      level
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 mb-1 text-sm">
+                    <span className="font-medium">
+                      {courseItem?.averageRating || 0}
+                    </span>
+                    {renderStars && renderStars(courseItem?.averageRating || 0)}
+                    <span className="text-gray-500 ml-1">
+                      ({courseItem?.ratingCount || 0})
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-lg font-bold text-red-600">
+                      ${courseItem?.pricingAfterDiscount}
+                    </span>
+                    {courseItem?.discountPct > 0 && (
+                      <>
+                        <span className="text-sm line-through text-gray-500">
+                          ${courseItem?.pricing}
+                        </span>
+                        <span className="text-sm text-green-600 font-semibold">
+                          -{courseItem?.discountPct}%
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-4">
+                    <Button
+                      onClick={() => handleCourseNavigate(courseItem?.id)}
+                      className="w-full"
+                    >
+                      Xem chi tiết →
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <h1 className="text-2xl font-bold text-gray-600">
+              No Courses Found
+            </h1>
+          )}
+        </div>
+      </section>
+      <Button variant="outline" className="w-full">
+        Xem thêm khóa học cùng tác giả
+      </Button>
+
+      <section className="py-12 px-4 lg:px-8">
+        <h2 className="text-2xl font-bold mb-6">Gợi ý các khóa học</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {studentViewCoursesList && studentViewCoursesList.length > 0 ? (
+            studentViewCoursesList.map((courseItem) => (
+              <div
+                onClick={() => handleCourseNavigate(courseItem?.id)}
+                key={courseItem?.id}
+                className="border rounded-lg overflow-hidden shadow cursor-pointer"
+              >
+                <img
+                  src={courseItem?.image || "/default-course.jpg"}
+                  width={300}
+                  height={150}
+                  className="w-full h-40 object-cover"
+                  alt={courseItem?.title}
+                />
+                <div className="p-4">
+                  <h3 className="font-bold text-lg mb-1 line-clamp-2">
+                    {courseItem?.title}
+                  </h3>
+
+                  <p className="text-sm text-gray-600 mb-1">
+                    Created by{" "}
+                    <span className="font-semibold">
+                      {courseItem?.instructorName}
+                    </span>
+                  </p>
+
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span
+                      className={`text-xs border px-2 py-1 rounded-full ${getCategoryColor(
+                        courseItem?.category
+                      )}`}
+                    >
+                      {courseItem?.category
+                        ?.split("-")
+                        .map((word) => word[0].toUpperCase() + word.slice(1))
+                        .join(" ")}
+                    </span>
+
+                    <span className="text-xs text-gray-500">
+                      {courseItem?.lectures?.length || 0} lectures
+                    </span>
+
+                    <span
+                      className={`text-xs ${getLevelColor(courseItem?.level)}`}
+                    >
+                      {courseItem?.level?.charAt(0).toUpperCase() +
+                        courseItem?.level?.slice(1)}{" "}
+                      level
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 mb-1 text-sm">
+                    <span className="font-medium">
+                      {courseItem?.averageRating || 0}
+                    </span>
+                    {renderStars && renderStars(courseItem?.averageRating || 0)}
+                    <span className="text-gray-500 ml-1">
+                      ({courseItem?.ratingCount || 0})
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-lg font-bold text-red-600">
+                      ${courseItem?.pricingAfterDiscount}
+                    </span>
+                    {courseItem?.discountPct > 0 && (
+                      <>
+                        <span className="text-sm line-through text-gray-500">
+                          ${courseItem?.pricing}
+                        </span>
+                        <span className="text-sm text-green-600 font-semibold">
+                          -{courseItem?.discountPct}%
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div className="mt-4">
+                    <Button
+                      onClick={() => handleCourseNavigate(courseItem?.id)}
+                      className="w-full"
+                    >
+                      Xem chi tiết →
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <h1 className="text-2xl font-bold text-gray-600">
+              No Courses Found
+            </h1>
+          )}
+        </div>
+      </section>
+
+      <Button variant="outline" className="w-full">
+        Xem thêm khóa học gợi ý
+      </Button>
     </div>
   );
 }

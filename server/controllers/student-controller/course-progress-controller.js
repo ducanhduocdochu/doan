@@ -114,8 +114,15 @@ const getCurrentCourseProgress = async (req, res) => {
       include: { lectures: true },
     });
 
-    const course = await prisma.course.findUnique({
+       const courseDetails = await prisma.course.findUnique({
       where: { id: courseId },
+      include: {
+        lectures: {
+          orderBy: {
+            id: "asc",
+          },
+        },
+      },
     });
 
     if (!progress) {
@@ -123,7 +130,7 @@ const getCurrentCourseProgress = async (req, res) => {
         success: true,
         message: "No progress found, you can start watching the course",
         data: {
-          courseDetails: course,
+          courseDetails: courseDetails,
           progress: [],
           isPurchased: true,
         },
@@ -133,7 +140,7 @@ const getCurrentCourseProgress = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        courseDetails: course,
+        courseDetails: courseDetails,
         progress: progress.lectures,
         completed: progress.completed,
         completionDate: progress.completion_date,

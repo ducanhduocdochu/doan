@@ -1,25 +1,151 @@
-const { PrismaClient } = require('@prisma/client');
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const getCoursesByStudentId = async (req, res) => {
   try {
     const { studentId } = req.params;
+    const {
+      category = "",
+      level = "",
+      search = "",
+      sortBy = "price-lowtohigh",
+      page = 1,
+      limit = 6,
+    } = req.query;
 
-    const studentBoughtCourses = await prisma.studentCourse.findMany({
-      where: {
-        user_id: studentId,
+    if (!studentId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing studentId",
+      });
+    }
+
+    const filters = {
+      user_id: studentId,
+      course: {
+        AND: [],
       },
+    };
+
+    if (category) {
+      filters.course.AND.push({ category: { in: category.split(",") } });
+    }
+
+    if (level) {
+      filters.course.AND.push({ level: { in: level.split(",") } });
+    }
+
+    if (search) {
+      filters.course.AND.push({
+        OR: [
+          { title: { contains: search } },
+          { subtitle: { contains: search } },
+          { description: { contains: search } },
+        ],
+      });
+    }
+
+    const allStudentCourses = await prisma.studentCourse.findMany({
+      where: filters,
       include: {
-        course: true, // Lấy chi tiết khóa học nếu cần
+        course: {
+          include: {
+            discount: true,
+            ratings: true,
+            lectures: true,
+            instructor: {
+              select: {
+                user_name: true,
+              },
+            },
+          },
+        },
       },
+    });
+
+    // Sort thủ công
+    let sorted = [...allStudentCourses];
+
+    switch (sortBy) {
+      case "price-lowtohigh":
+        sorted.sort((a, b) => a.course.pricing - b.course.pricing);
+        break;
+      case "price-hightolow":
+        sorted.sort((a, b) => b.course.pricing - a.course.pricing);
+        break;
+      case "title-atoz":
+        sorted.sort((a, b) =>
+          a.course.title.localeCompare(b.course.title)
+        );
+        break;
+      case "title-ztoa":
+        sorted.sort((a, b) =>
+          b.course.title.localeCompare(a.course.title)
+        );
+        break;
+      case "latest":
+        sorted.sort(
+          (a, b) =>
+            new Date(b.date_of_purchase) - new Date(a.date_of_purchase)
+        );
+        break;
+      default:
+        break;
+    }
+
+    const pageNumber = parseInt(page);
+    const pageSize = parseInt(limit);
+    const paginated = sorted.slice(
+      (pageNumber - 1) * pageSize,
+      pageNumber * pageSize
+    );
+
+    const result = paginated.map(({ course }) => {
+      const discountPct = course.discount?.discount_pct || 0;
+      const pricingAfterDiscount = (
+        course.pricing - (discountPct * course.pricing) / 100
+      ).toFixed(2);
+
+      const ratingValues = course.ratings.map((r) => r.rating);
+      const ratingCount = ratingValues.length;
+      const averageRating =
+        ratingCount > 0
+          ? Number(
+              (
+                ratingValues.reduce((sum, r) => sum + r, 0) / ratingCount
+              ).toFixed(1)
+            )
+          : 0;
+
+      return {
+        id: course.id,
+        title: course.title,
+        subtitle: course.subtitle,
+        category: course.category,
+        level: course.level,
+        primary_language: course.primary_language,
+        description: course.description,
+        image: course.image,
+        pricing: course.pricing,
+        pricingAfterDiscount,
+        discountPct,
+        ratingCount,
+        averageRating,
+        lectures: course.lectures,
+        instructorName: course.instructor?.user_name || "Unknown",
+        createdAt: course.created_at,
+      };
     });
 
     res.status(200).json({
       success: true,
-      data: studentBoughtCourses,
+      data: {
+        courses: result,
+        totalItems: sorted.length,
+      },
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get courses by studentId error:", error);
     res.status(500).json({
       success: false,
       message: "Some error occurred!",

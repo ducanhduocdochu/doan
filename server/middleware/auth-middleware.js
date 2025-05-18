@@ -6,7 +6,7 @@ const verifyToken = (token, secretKey) => {
 
 const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  console.log(authHeader, "authHeader");
+  // console.log(authHeader, "authHeader");
 
   if (!authHeader) {
     return res.status(401).json({
@@ -16,7 +16,7 @@ const authenticate = (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-  console.log(token, "token");
+  // console.log(token, "token");
 
   try {
     const payload = verifyToken(token, process.env.JWT_SECRET || "your_fallback_secret");

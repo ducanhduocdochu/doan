@@ -12,11 +12,22 @@ export default function StudentProvider({ children }) {
   const [studentCurrentCourseProgress, setStudentCurrentCourseProgress] =
     useState({});
 
+      // ✅ Thêm danh sách khóa học yêu thích
+  const [studentFavoriteCoursesList, setStudentFavoriteCoursesList] =
+    useState([]);
+
+  // ✅ Thêm giỏ hàng của học viên
+  const [studentCartCoursesList, setStudentCartCoursesList] = useState([]);
+
   return (
     <StudentContext.Provider
       value={{
         studentViewCoursesList,
         setStudentViewCoursesList,
+        studentFavoriteCoursesList,
+        setStudentFavoriteCoursesList,
+        studentCartCoursesList,
+        setStudentCartCoursesList,
         loadingState,
         setLoadingState,
         studentViewCourseDetails,

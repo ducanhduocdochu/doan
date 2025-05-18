@@ -15,6 +15,8 @@ import StudentCoursesPage from "./pages/student/student-courses";
 import StudentViewCourseProgressPage from "./pages/student/course-progress";
 import { Toaster } from "./components/ui/toaster";
 import UnverifiedAccountPage from "./pages/auth/unverified-account";
+import StudentCartCoursesPage from "./pages/student/cart-courses";
+import StudentFavoriteCoursesPage from "./pages/student/favorite-courses";
 
 function App() {
   const { auth } = useContext(AuthContext);
@@ -96,6 +98,8 @@ function App() {
             path="course-progress/:id"
             element={<StudentViewCourseProgressPage />}
           />
+          <Route path="cart" element={<StudentCartCoursesPage />} />
+          <Route path="favorites" element={<StudentFavoriteCoursesPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

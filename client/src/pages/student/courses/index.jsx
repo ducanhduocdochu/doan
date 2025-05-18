@@ -64,29 +64,39 @@ function StudentViewCoursesPage() {
     loadingState,
     setLoadingState,
   } = useContext(StudentContext);
-
-  const navigate = useNavigate();
-  const { auth } = useContext(AuthContext);
-
-  function renderStars(rating) {
-    console.log("rating", rating);
+    const renderStars = (rating) => {
   const stars = [];
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating - fullStars >= 0.5;
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
   for (let i = 0; i < fullStars; i++) {
-    stars.push(<Star key={`full-${i}`} className="w-4 h-4 text-yellow-400 fill-yellow-400" />);
+    stars.push(
+      <Star
+        key={`full-${i}`}
+        className="w-4 h-4 text-yellow-400 fill-yellow-400"
+      />
+    );
   }
   if (hasHalfStar) {
-    stars.push(<StarHalf key="half" className="w-4 h-4 text-yellow-400 fill-yellow-400" />);
+    stars.push(
+      <StarHalf
+        key="half"
+        className="w-4 h-4 text-yellow-400 fill-yellow-400"
+      />
+    );
   }
   for (let i = 0; i < emptyStars; i++) {
-    stars.push(<StarOff key={`empty-${i}`} className="w-4 h-4 text-yellow-400" />);
+    stars.push(
+      <StarOff key={`empty-${i}`} className="w-4 h-4 text-yellow-400" />
+    );
   }
 
   return stars;
-}
+};
+
+  const navigate = useNavigate();
+  const { auth } = useContext(AuthContext);
 
   function handleFilterOnChange(getSectionId, getCurrentOption) {
     let cpyFilters = { ...filters };
@@ -247,7 +257,7 @@ function StudentViewCoursesPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
               <span className="text-sm text-black font-bold">
-                {studentViewCoursesList.length} Results
+                {totalCourses} Results
               </span>
             </div>
           </div>
@@ -259,7 +269,7 @@ function StudentViewCoursesPage() {
                   className="cursor-pointer"
                   key={courseItem?.id}
                 >
-                  <CardContent className="flex gap-4 p-4">
+                  <CardContent className="flex gap-4 p-4 items-center">
                     <div className="w-48 h-32 flex-shrink-0">
                       <img
                         src={courseItem?.image}
@@ -306,27 +316,27 @@ function StudentViewCoursesPage() {
                         </span>
                       </p>
                       <div className="flex items-center gap-1 mb-2">
-  {(courseItem.averageRating || 0)}
-  {renderStars(courseItem.averageRating || 0)}
-  <span className="text-sm text-gray-500 ml-1">
-    ({courseItem.ratingCount || 0})
-  </span>
-</div>
+                        {courseItem.averageRating || 0}
+                        {renderStars(courseItem.averageRating || 0)}
+                        <span className="text-sm text-gray-500 ml-1">
+                          ({courseItem.ratingCount || 0})
+                        </span>
+                      </div>
                       <div className="flex items-center gap-2 mt-2">
-  <p className="text-lg font-bold text-red-600">
-    ${courseItem?.pricingAfterDiscount}
-  </p>
-  {courseItem.discountPct > 0 && (
-    <>
-      <p className="text-sm line-through text-gray-500">
-        ${courseItem?.pricing}
-      </p>
-      <p className="text-sm text-green-600 font-semibold">
-        -{courseItem.discountPct}%
-      </p>
-    </>
-  )}
-</div>
+                        <p className="text-lg font-bold text-red-600">
+                          ${courseItem?.pricingAfterDiscount}
+                        </p>
+                        {courseItem.discountPct > 0 && (
+                          <>
+                            <p className="text-sm line-through text-gray-500">
+                              ${courseItem?.pricing}
+                            </p>
+                            <p className="text-sm text-green-600 font-semibold">
+                              -{courseItem.discountPct}%
+                            </p>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
