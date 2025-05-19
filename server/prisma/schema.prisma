@@ -155,6 +155,12 @@ model InstructorProfile {
   paypal_email String
   cv           String     // đường dẫn tới file hoặc URL
 
+  phone          String?       // Số điện thoại liên hệ (tuỳ chọn)
+  address        String?       // Địa chỉ (hoặc quốc gia, thành phố)
+  linkedin_url   String?       // Hồ sơ LinkedIn
+  website_url    String?       // Trang cá nhân hoặc portfolio
+  avatar_url     String?       // Ảnh đại diện riêng cho giảng viên
+
   user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 

@@ -31,6 +31,8 @@ export async function checkAuthService() {
 }
 
 export async function mediaUploadService(formData, onProgressCallback) {
+
+  console.log("mediaUploadService", formData);
   const { data } = await axiosInstance.post("/media/upload", formData, {
     onUploadProgress: (progressEvent) => {
       const percentCompleted = Math.round(
@@ -184,9 +186,26 @@ export async function fetchStudentBoughtCoursesService(studentId, query) {
 }
 
 export async function getCurrentCourseProgressService(userId, courseId) {
-  console.log(userId, courseId, "userId, courseId");
   const { data } = await axiosInstance.get(
     `/student/course-progress/get/${userId}/${courseId}`
+  );
+
+  return data;
+}
+
+export async function getInstructorProfileService(userId) {
+  const { data } = await axiosInstance.get(
+    `/profile/get-user/${userId}`
+  );
+
+  return data;
+}
+
+export async function updateInstructorProfileService(updatedData) {
+  console.log("updateInstructorProfileService", updatedData);
+  const { data } = await axiosInstance.put(
+    `/profile/update-user`,
+    updatedData
   );
 
   return data;

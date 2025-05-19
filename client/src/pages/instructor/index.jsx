@@ -6,7 +6,7 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AuthContext } from "@/context/auth-context";
 import { InstructorContext } from "@/context/instructor-context";
 import { fetchInstructorCourseListService } from "@/services";
-import { BarChart, Book, LogOut, UserCircle } from "lucide-react";
+import { BarChart, Book, DollarSign, FileText, LogOut, Settings, Upload, UserCircle, Users } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 
 function InstructorDashboardpage() {
@@ -17,6 +17,7 @@ function InstructorDashboardpage() {
 
   async function fetchAllCourses() {
     const response = await fetchInstructorCourseListService();
+    console.log(response, "response");
     if (response?.success) setInstructorCoursesList(response?.data);
   }
 
@@ -24,33 +25,62 @@ function InstructorDashboardpage() {
     fetchAllCourses();
   }, []);
 
-  const menuItems = [
-    {
-      icon: UserCircle,
-      label: "Profile",
-      value: "profile",
-      component: <InstructorProfile />,
-    },
-    {
-      icon: BarChart,
-      label: "Dashboard",
-      value: "dashboard",
-      component: <InstructorDashboard listOfCourses={instructorCoursesList} />,
-    },
-    {
-      icon: Book,
-      label: "Courses",
-      value: "courses",
-      component: <InstructorCourses listOfCourses={instructorCoursesList} />,
-    },
-
-    {
-      icon: LogOut,
-      label: "Logout",
-      value: "logout",
-      component: null,
-    },
-  ];
+ const menuItems = [
+  {
+    icon: UserCircle,
+    label: "Profile",
+    value: "profile",
+    component: <InstructorProfile />,
+  },
+  {
+    icon: BarChart,
+    label: "Dashboard",
+    value: "dashboard",
+    component: <InstructorDashboard listOfCourses={instructorCoursesList} />,
+  },
+  {
+    icon: Book,
+    label: "Courses",
+    value: "courses",
+    // component: <InstructorCourses listOfCourses={instructorCoursesList} />,
+  },
+  {
+    icon: FileText,
+    label: "Assignments",
+    value: "assignments",
+    component: <div>Assignments Management (Coming soon)</div>,
+  },
+  {
+    icon: Users,
+    label: "Students",
+    value: "students",
+    component: <div>Student Analytics & Messaging (Coming soon)</div>,
+  },
+  {
+    icon: DollarSign,
+    label: "Earnings",
+    value: "earnings",
+    component: <div>Earnings Overview (Coming soon)</div>,
+  },
+  {
+    icon: Upload,
+    label: "Resources",
+    value: "resources",
+    component: <div>Upload and Manage Resources (Coming soon)</div>,
+  },
+  {
+    icon: Settings,
+    label: "Settings",
+    value: "settings",
+    component: <div>Account & Teaching Settings (Coming soon)</div>,
+  },
+  {
+    icon: LogOut,
+    label: "Logout",
+    value: "logout",
+    component: null,
+  },
+];
 
   function handleLogout() {
     resetCredentials();

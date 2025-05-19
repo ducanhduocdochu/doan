@@ -13,17 +13,20 @@ function InstructorDashboard({ listOfCourses }) {
   function calculateTotalStudentsAndProfit() {
     const { totalStudents, totalProfit, studentList } = listOfCourses.reduce(
       (acc, course) => {
-        const studentCount = course.students.length;
+        // const studentCount = course.students.length;
+        const studentCount = 5;
         acc.totalStudents += studentCount;
         acc.totalProfit += course.pricing * studentCount;
 
-        course.students.forEach((student) => {
-          acc.studentList.push({
-            courseTitle: course.title,
-            studentName: student.studentName,
-            studentEmail: student.studentEmail,
-          });
-        });
+        // course.students.forEach((student) => {
+        //   acc.studentList.push({
+        //     courseTitle: course.title,
+        //     // studentName: student.studentName,
+        //     // studentEmail: student.studentEmail,
+        //     studentName: "Duc Anh",
+        //     studentEmail: "tducanh263@gmail.com",
+        //   });
+        // });
 
         return acc;
       },
