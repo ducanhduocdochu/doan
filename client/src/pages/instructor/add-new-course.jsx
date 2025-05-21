@@ -76,7 +76,6 @@ function AddNewCoursePage() {
       ...courseLandingFormData,
       students: [],
       curriculum: courseCurriculumFormData,
-      isPublised: true,
     };
 
     const response =
@@ -86,6 +85,8 @@ function AddNewCoursePage() {
             courseFinalFormData
           )
         : await addNewCourseService(courseFinalFormData);
+
+    console.log(response, "response");
 
     if (response?.success) {
       setCourseLandingFormData(courseLandingInitialFormData);

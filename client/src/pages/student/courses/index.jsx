@@ -64,36 +64,36 @@ function StudentViewCoursesPage() {
     loadingState,
     setLoadingState,
   } = useContext(StudentContext);
-    const renderStars = (rating) => {
-  const stars = [];
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating - fullStars >= 0.5;
-  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating - fullStars >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
-  for (let i = 0; i < fullStars; i++) {
-    stars.push(
-      <Star
-        key={`full-${i}`}
-        className="w-4 h-4 text-yellow-400 fill-yellow-400"
-      />
-    );
-  }
-  if (hasHalfStar) {
-    stars.push(
-      <StarHalf
-        key="half"
-        className="w-4 h-4 text-yellow-400 fill-yellow-400"
-      />
-    );
-  }
-  for (let i = 0; i < emptyStars; i++) {
-    stars.push(
-      <StarOff key={`empty-${i}`} className="w-4 h-4 text-yellow-400" />
-    );
-  }
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star
+          key={`full-${i}`}
+          className="w-4 h-4 text-yellow-400 fill-yellow-400"
+        />
+      );
+    }
+    if (hasHalfStar) {
+      stars.push(
+        <StarHalf
+          key="half"
+          className="w-4 h-4 text-yellow-400 fill-yellow-400"
+        />
+      );
+    }
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <StarOff key={`empty-${i}`} className="w-4 h-4 text-yellow-400" />
+      );
+    }
 
-  return stars;
-};
+    return stars;
+  };
 
   const navigate = useNavigate();
   const { auth } = useContext(AuthContext);

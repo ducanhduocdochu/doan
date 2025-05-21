@@ -11,23 +11,77 @@ import {
   Linkedin,
   Globe,
   ShieldCheck,
-  Pencil,
   Loader2,
   Users,
   Star,
   LayoutList,
   Camera,
+  StarOff,
+  StarHalf,
 } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { getInstructorProfileService, mediaUploadService, updateInstructorProfileService } from "@/services";
+import {
+  checkCoursePurchaseInfoService,
+  getInstructorProfileService,
+  mediaUploadService,
+  updateInstructorProfileService,
+} from "@/services";
 import EditProfileDialog from "./edit-profile";
 import { toast } from "@/hooks/use-toast";
+import CourseSlider from "./courses/course-list-slide";
+import { useNavigate } from "react-router-dom";
+import ReviewsSection from "../student-view/review";
 
-function InstructorProfile() {
+function InstructorProfile({ listOfCourses }) {
   const { auth } = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState(null);
+  const [allRatings, setAllRatings] = useState([]);
+  const [averageRatingAllCourses, setAverageRatingAllCourses] = useState(0);
+  const [quantityStudent, setQuantityStudent] = useState(0);
+console.log(listOfCourses, "listOfCourses");
 
+  useEffect(() => {
+    const ratings = listOfCourses.flatMap(course => course.ratings || []);
+    setAllRatings({ratings: ratings});
+
+        if (listOfCourses.length === 0) {
+      setAverageRatingAllCourses(0);
+      return;
+    }
+
+    const sumAvg = listOfCourses.reduce((sum, course) => {
+      return sum + (course.average_rating || 0);
+    }, 0);
+    setAverageRatingAllCourses(sumAvg)
+
+        if (listOfCourses.length === 0) {
+      setQuantityStudent(0);
+      return;
+    }
+
+
+    const quantityStudent = listOfCourses.reduce((sum, course) => {
+      return sum + (course.student_courses.length || 0);
+    }, 0);
+    setQuantityStudent(quantityStudent);  
+  }, [listOfCourses]);
+
+  const navigate = useNavigate();
+  async function handleCourseNavigate(getCurrentCourseId) {
+    const response = await checkCoursePurchaseInfoService(
+      getCurrentCourseId,
+      auth?.user?._id
+    );
+
+    if (response?.success) {
+      if (response?.data) {
+        navigate(`/course-progress/${getCurrentCourseId}`);
+      } else {
+        navigate(`/course/details/${getCurrentCourseId}`);
+      }
+    }
+  }
 
   useEffect(() => {
     async function fetchProfile() {
@@ -46,6 +100,37 @@ function InstructorProfile() {
     fetchProfile();
   }, []);
 
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating - fullStars >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star
+          key={`full-${i}`}
+          className="w-4 h-4 text-yellow-400 fill-yellow-400"
+        />
+      );
+    }
+    if (hasHalfStar) {
+      stars.push(
+        <StarHalf
+          key="half"
+          className="w-4 h-4 text-yellow-400 fill-yellow-400"
+        />
+      );
+    }
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <StarOff key={`empty-${i}`} className="w-4 h-4 text-yellow-400" />
+      );
+    }
+
+    return stars;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64 text-muted-foreground">
@@ -61,50 +146,50 @@ function InstructorProfile() {
     );
   }
 
-// const handleAvatarChange = async (event) => {
-//   const file = event.target.files[0];
-//   if (!file) return;
+  // const handleAvatarChange = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-//   const reader = new FileReader();
-//   reader.onloadend = () => {
-//     setProfile((prev) => ({
-//       ...prev,
-//       instructor_profile: {
-//         ...prev.instructor_profile,
-//         avatar_url: reader.result,
-//       },
-//     }));
-//   };
-//   reader.readAsDataURL(file);
+  //   const reader = new FileReader();
+  //   reader.onloadend = () => {
+  //     setProfile((prev) => ({
+  //       ...prev,
+  //       instructor_profile: {
+  //         ...prev.instructor_profile,
+  //         avatar_url: reader.result,
+  //       },
+  //     }));
+  //   };
+  //   reader.readAsDataURL(file);
 
-//   try {
-//     const formData = new FormData();
-//     formData.append("file", file);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("file", file);
 
-//     console.log(formData, "formData");
-//     const uploadRes = await mediaUploadService(formData, (percent) => {
-//       setUploadProgress(percent);
-//     });
-//     if (!uploadRes.success || !uploadRes.url) {
-//       throw new Error("Upload avatar failed");
-//     }
+  //     console.log(formData, "formData");
+  //     const uploadRes = await mediaUploadService(formData, (percent) => {
+  //       setUploadProgress(percent);
+  //     });
+  //     if (!uploadRes.success || !uploadRes.url) {
+  //       throw new Error("Upload avatar failed");
+  //     }
 
-//     // const updateRes = await updateInstructorAvatarUrlService(uploadRes.url);
-//     // if (!updateRes.success) {
-//     //   throw new Error("Update avatar_url in DB failed");
-//     // }
+  //     // const updateRes = await updateInstructorAvatarUrlService(uploadRes.url);
+  //     // if (!updateRes.success) {
+  //     //   throw new Error("Update avatar_url in DB failed");
+  //     // }
 
-//     setProfile((prev) => ({
-//       ...prev,
-//       instructor_profile: {
-//         ...prev.instructor_profile,
-//         avatar_url: uploadRes.url,
-//       },
-//     }));
-//   } catch (err) {
-//     console.error("Avatar update error:", err);
-//   }
-// };
+  //     setProfile((prev) => ({
+  //       ...prev,
+  //       instructor_profile: {
+  //         ...prev.instructor_profile,
+  //         avatar_url: uploadRes.url,
+  //       },
+  //     }));
+  //   } catch (err) {
+  //     console.error("Avatar update error:", err);
+  //   }
+  // };
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
@@ -128,20 +213,18 @@ function InstructorProfile() {
         <StatBox
           icon={<Users className="w-5 h-5" />}
           label="Students"
-          // value={profile.total_students.toLocaleString()}
-          value={1200}
+          value={quantityStudent}
         />
         <StatBox
           icon={<LayoutList className="w-5 h-5" />}
           label="Courses"
-          // value={profile.total_courses}
-          value={5}
+          value={listOfCourses.length}
         />
         <StatBox
           icon={<Star className="w-5 h-5 text-yellow-500" />}
           label="Rating"
           // value={`${profile.rating_avg} / 5`}
-          value={`4.8 / 5`}
+          value={`${averageRatingAllCourses} / 5 (${allRatings.ratings.length})`}
         />
       </div>
 
@@ -208,7 +291,7 @@ function InstructorProfile() {
             label: "LinkedIn",
             value: (
               <a
-                href={profile.linkedin_url}
+                href={profile.instructor_profile.linkedin_url}
                 className="text-blue-600 underline"
                 target="_blank"
               >
@@ -221,16 +304,24 @@ function InstructorProfile() {
             label: "Website",
             value: (
               <a
-                href={profile.website_url}
+                href={profile.instructor_profile.website_url}
                 className="text-blue-600 underline"
                 target="_blank"
               >
-                {profile.website_url}
+                View Website
               </a>
             ),
           },
         ]}
       />
+
+      <CourseSlider
+        listOfCourses={listOfCourses}
+        renderStars={renderStars}
+        handleCourseNavigate={handleCourseNavigate}
+      />
+
+      <ReviewsSection studentViewCourseDetails={allRatings} renderStars={renderStars} isStudent={false} />
     </div>
   );
 }
@@ -274,7 +365,7 @@ function AvatarDialog({ profile, setProfile }) {
   const [image, setImage] = useState(null);
   const [scale, setScale] = useState(1.2);
   const editorRef = useRef(null);
-    const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileChange = (e) => {
@@ -282,66 +373,67 @@ function AvatarDialog({ profile, setProfile }) {
     if (!file) return;
     setImage(file);
   };
-const handleSave = () => {
-  if (!editorRef.current) return;
+  const handleSave = () => {
+    if (!editorRef.current) return;
 
-  const canvas = editorRef.current.getImageScaledToCanvas();
+    const canvas = editorRef.current.getImageScaledToCanvas();
 
-  canvas.toBlob(async (blob) => {
-    if (!blob) {
-      toast({
-        title: "Error",
-        description: "Không thể tạo ảnh từ canvas.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setIsUploading(true);
-      const formData = new FormData();
-      formData.append("file", blob, "avatar.png");
-
-      const uploadRes = await mediaUploadService(formData, (percent) => {
-        setUploadProgress(percent);
-      });
-
-      if (!uploadRes.success || !uploadRes.data.url) {
-        throw new Error("Upload avatar thất bại");
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        toast({
+          title: "Error",
+          description: "Không thể tạo ảnh từ canvas.",
+          variant: "destructive",
+        });
+        return;
       }
 
-      const updateRes = await updateInstructorProfileService({
-        avatar_url: uploadRes.data.url,
-      });
+      try {
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append("file", blob, "avatar.png");
 
-      if (!updateRes.success) throw new Error("Update avatar_url thất bại");
+        const uploadRes = await mediaUploadService(formData, (percent) => {
+          setUploadProgress(percent);
+        });
 
-      setProfile((prev) => ({
-        ...prev,
-        instructor_profile: {
-          ...prev.instructor_profile,
+        if (!uploadRes.success || !uploadRes.data.url) {
+          throw new Error("Upload avatar thất bại");
+        }
+
+        const updateRes = await updateInstructorProfileService({
           avatar_url: uploadRes.data.url,
-        },
-      }));
+        });
 
-      toast({
-        title: "Ảnh đại diện đã được cập nhật",
-        description: "Thay đổi đã được lưu thành công.",
-        variant: "default",
-      });
-    } catch (err) {
-      console.error("❌ Upload error:", err);
-      toast({
-        title: "Lỗi cập nhật ảnh",
-        description: err?.message || "Có lỗi xảy ra trong quá trình cập nhật.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
-  }, "image/png");
-};
+        if (!updateRes.success) throw new Error("Update avatar_url thất bại");
+
+        setProfile((prev) => ({
+          ...prev,
+          instructor_profile: {
+            ...prev.instructor_profile,
+            avatar_url: uploadRes.data.url,
+          },
+        }));
+
+        toast({
+          title: "Ảnh đại diện đã được cập nhật",
+          description: "Thay đổi đã được lưu thành công.",
+          variant: "default",
+        });
+      } catch (err) {
+        console.error("❌ Upload error:", err);
+        toast({
+          title: "Lỗi cập nhật ảnh",
+          description:
+            err?.message || "Có lỗi xảy ra trong quá trình cập nhật.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
+      }
+    }, "image/png");
+  };
 
   return (
     <Dialog.Root>
@@ -407,18 +499,18 @@ const handleSave = () => {
           )}
 
           {isUploading && (
-  <div className="mt-2">
-    <div className="h-2 w-full bg-gray-200 rounded">
-      <div
-        className="h-full bg-blue-500 rounded transition-all"
-        style={{ width: `${uploadProgress}%` }}
-      ></div>
-    </div>
-    <p className="text-sm text-muted-foreground mt-1 text-center">
-      Đang tải lên: {uploadProgress}%
-    </p>
-  </div>
-)}
+            <div className="mt-2">
+              <div className="h-2 w-full bg-gray-200 rounded">
+                <div
+                  className="h-full bg-blue-500 rounded transition-all"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1 text-center">
+                Đang tải lên: {uploadProgress}%
+              </p>
+            </div>
+          )}
 
           {/* Buttons */}
           <div className="flex justify-end gap-2 pt-2">

@@ -13,7 +13,7 @@ import {
   mediaUploadService,
 } from "@/services";
 import { Upload } from "lucide-react";
-import { useContext, useRef } from "react";
+import { useContext, useRef, useState } from "react";
 
 function CourseCurriculum() {
   const {
@@ -25,113 +25,141 @@ function CourseCurriculum() {
     setMediaUploadProgressPercentage,
   } = useContext(InstructorContext);
 
-  const bulkUploadInputRef = useRef(null);
+  // Lưu ref input file bulk upload theo chapterNumber
+  const bulkUploadInputRefs = useRef({});
 
-  function handleNewLecture() {
+  // Lấy chapterNumber lớn nhất để tạo chapter mới
+  const maxChapterNumber = courseCurriculumFormData.reduce(
+    (max, item) => (item.chapterNumber > max ? item.chapterNumber : max),
+    0
+  );
+
+  // Nhóm lecture theo chapterNumber
+  const chapters = courseCurriculumFormData.reduce((acc, item, index) => {
+    const chapterKey = item.chapterNumber ?? 0; // default 0 nếu không có
+    if (!acc[chapterKey]) acc[chapterKey] = { title: item.chapterTitle || "", lectures: [] };
+    acc[chapterKey].lectures.push({ ...item, index });
+    return acc;
+  }, {});
+
+  // Thêm chapter mới (thêm 1 lecture mới thuộc chapter mới)
+  function handleAddChapter() {
+    const newChapterNumber = maxChapterNumber + 1;
     setCourseCurriculumFormData([
       ...courseCurriculumFormData,
       {
         ...courseCurriculumInitialFormData[0],
+        chapterNumber: newChapterNumber,
+        chapterTitle: "",
       },
     ]);
   }
 
-  function handleCourseTitleChange(event, currentIndex) {
-    let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
-    cpyCourseCurriculumFormData[currentIndex] = {
-      ...cpyCourseCurriculumFormData[currentIndex],
+  // Thêm lecture mới vào chapter
+  function handleAddLectureToChapter(chapterNumber) {
+    setCourseCurriculumFormData([
+      ...courseCurriculumFormData,
+      {
+        ...courseCurriculumInitialFormData[0],
+        chapterNumber,
+        chapterTitle:
+          courseCurriculumFormData.find((c) => c.chapterNumber === chapterNumber)
+            ?.chapterTitle || "",
+      },
+    ]);
+  }
+
+  // Thay đổi tiêu đề chapter
+  function handleChapterTitleChange(event, chapterNumber) {
+    const value = event.target.value;
+    const newData = courseCurriculumFormData.map((item) =>
+      item.chapterNumber === chapterNumber ? { ...item, chapterTitle: value } : item
+    );
+    setCourseCurriculumFormData(newData);
+  }
+
+  // Thay đổi tiêu đề lecture
+  function handleLectureTitleChange(event, lectureIndex) {
+    let cpy = [...courseCurriculumFormData];
+    cpy[lectureIndex] = {
+      ...cpy[lectureIndex],
       title: event.target.value,
     };
-
-    setCourseCurriculumFormData(cpyCourseCurriculumFormData);
+    setCourseCurriculumFormData(cpy);
   }
 
-  function handleFreePreviewChange(currentValue, currentIndex) {
-    let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
-    cpyCourseCurriculumFormData[currentIndex] = {
-      ...cpyCourseCurriculumFormData[currentIndex],
+  // Thay đổi trạng thái free preview lecture
+  function handleFreePreviewChange(currentValue, lectureIndex) {
+    let cpy = [...courseCurriculumFormData];
+    cpy[lectureIndex] = {
+      ...cpy[lectureIndex],
       freePreview: currentValue,
     };
-
-    setCourseCurriculumFormData(cpyCourseCurriculumFormData);
+    setCourseCurriculumFormData(cpy);
   }
 
-  async function handleSingleLectureUpload(event, currentIndex) {
+  // Upload 1 video cho lecture
+  async function handleSingleLectureUpload(event, lectureIndex) {
     const selectedFile = event.target.files[0];
+    if (!selectedFile) return;
 
-    if (selectedFile) {
-      const videoFormData = new FormData();
-      videoFormData.append("file", selectedFile);
+    const videoFormData = new FormData();
+    videoFormData.append("file", selectedFile);
 
-      try {
-        setMediaUploadProgress(true);
-        const response = await mediaUploadService(
-          videoFormData,
-          setMediaUploadProgressPercentage
-        );
-        if (response.success) {
-          let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
-          cpyCourseCurriculumFormData[currentIndex] = {
-            ...cpyCourseCurriculumFormData[currentIndex],
-            videoUrl: response?.data?.url,
-            public_id: response?.data?.public_id,
-          };
-          setCourseCurriculumFormData(cpyCourseCurriculumFormData);
-          setMediaUploadProgress(false);
-        }
-      } catch (error) {
-        console.log(error);
+    try {
+      setMediaUploadProgress(true);
+      const response = await mediaUploadService(
+        videoFormData,
+        setMediaUploadProgressPercentage
+      );
+      if (response.success) {
+        let cpy = [...courseCurriculumFormData];
+        cpy[lectureIndex] = {
+          ...cpy[lectureIndex],
+          videoUrl: response?.data?.url,
+          public_id: response?.data?.public_id,
+        };
+        setCourseCurriculumFormData(cpy);
       }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setMediaUploadProgress(false);
     }
   }
 
-  async function handleReplaceVideo(currentIndex) {
-    let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
-    const getCurrentVideoPublicId =
-      cpyCourseCurriculumFormData[currentIndex].public_id;
+  // Thay thế video lecture
+  async function handleReplaceVideo(lectureIndex) {
+    let cpy = [...courseCurriculumFormData];
+    const currentPublicId = cpy[lectureIndex].public_id;
 
-    const deleteCurrentMediaResponse = await mediaDeleteService(
-      getCurrentVideoPublicId
-    );
+    const deleteResponse = await mediaDeleteService(currentPublicId);
 
-    if (deleteCurrentMediaResponse?.success) {
-      cpyCourseCurriculumFormData[currentIndex] = {
-        ...cpyCourseCurriculumFormData[currentIndex],
+    if (deleteResponse?.success) {
+      cpy[lectureIndex] = {
+        ...cpy[lectureIndex],
         videoUrl: "",
         public_id: "",
       };
-
-      setCourseCurriculumFormData(cpyCourseCurriculumFormData);
+      setCourseCurriculumFormData(cpy);
     }
   }
 
-  function isCourseCurriculumFormDataValid() {
-    return courseCurriculumFormData.every((item) => {
-      return (
-        item &&
-        typeof item === "object" &&
-        item.title.trim() !== "" &&
-        item.videoUrl.trim() !== ""
-      );
-    });
+  // Xóa lecture
+  async function handleDeleteLecture(lectureIndex) {
+    let cpy = [...courseCurriculumFormData];
+    const currentPublicId = cpy[lectureIndex].public_id;
+
+    const response = await mediaDeleteService(currentPublicId);
+
+    if (response?.success) {
+      cpy = cpy.filter((_, index) => index !== lectureIndex);
+      setCourseCurriculumFormData(cpy);
+    }
   }
 
-  function handleOpenBulkUploadDialog() {
-    bulkUploadInputRef.current?.click();
-  }
-
-  function areAllCourseCurriculumFormDataObjectsEmpty(arr) {
-    return arr.every((obj) => {
-      return Object.entries(obj).every(([key, value]) => {
-        if (typeof value === "boolean") {
-          return true;
-        }
-        return value === "";
-      });
-    });
-  }
-
-  async function handleMediaBulkUpload(event) {
+  // Bulk upload video cho 1 chapter cụ thể
+  async function handleMediaBulkUpload(event, chapterNumber) {
     const selectedFiles = Array.from(event.target.files);
     const bulkFormData = new FormData();
 
@@ -144,144 +172,171 @@ function CourseCurriculum() {
         setMediaUploadProgressPercentage
       );
 
-      console.log(response, "bulk");
       if (response?.success) {
-        let cpyCourseCurriculumFormdata =
-          areAllCourseCurriculumFormDataObjectsEmpty(courseCurriculumFormData)
+        let cpy =
+          courseCurriculumFormData.length === 0
             ? []
             : [...courseCurriculumFormData];
 
-        cpyCourseCurriculumFormdata = [
-          ...cpyCourseCurriculumFormdata,
+        cpy = [
+          ...cpy,
           ...response?.data.map((item, index) => ({
             videoUrl: item?.url,
             public_id: item?.public_id,
-            title: `Lecture ${
-              cpyCourseCurriculumFormdata.length + (index + 1)
-            }`,
+            title: `Lecture ${cpy.length + (index + 1)}`,
             freePreview: false,
+            chapterNumber,
+            chapterTitle:
+              courseCurriculumFormData.find((c) => c.chapterNumber === chapterNumber)
+                ?.chapterTitle || "",
           })),
         ];
-        setCourseCurriculumFormData(cpyCourseCurriculumFormdata);
-        setMediaUploadProgress(false);
+        setCourseCurriculumFormData(cpy);
       }
     } catch (e) {
       console.log(e);
+    } finally {
+      setMediaUploadProgress(false);
+      // Reset input để có thể upload lại cùng file nếu muốn
+      if (bulkUploadInputRefs.current[chapterNumber]) {
+        bulkUploadInputRefs.current[chapterNumber].value = "";
+      }
     }
   }
 
-  async function handleDeleteLecture(currentIndex) {
-    let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
-    const getCurrentSelectedVideoPublicId =
-      cpyCourseCurriculumFormData[currentIndex].public_id;
-
-    const response = await mediaDeleteService(getCurrentSelectedVideoPublicId);
-
-    if (response?.success) {
-      cpyCourseCurriculumFormData = cpyCourseCurriculumFormData.filter(
-        (_, index) => index !== currentIndex
+  // Kiểm tra toàn bộ lectures hợp lệ
+  function isCourseCurriculumFormDataValid() {
+    return courseCurriculumFormData.every((item) => {
+      return (
+        item &&
+        typeof item === "object" &&
+        item.title.trim() !== "" &&
+        item.videoUrl.trim() !== ""
       );
-
-      setCourseCurriculumFormData(cpyCourseCurriculumFormData);
-    }
+    });
   }
 
   return (
     <Card>
-      <CardHeader className="flex flex-row justify-between">
+      <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle>Create Course Curriculum</CardTitle>
-        <div>
-          <Input
-            type="file"
-            ref={bulkUploadInputRef}
-            accept="video/*"
-            multiple
-            className="hidden"
-            id="bulk-media-upload"
-            onChange={handleMediaBulkUpload}
-          />
-          <Button
-            as="label"
-            htmlFor="bulk-media-upload"
-            variant="outline"
-            className="cursor-pointer"
-            onClick={handleOpenBulkUploadDialog}
-          >
-            <Upload className="w-4 h-5 mr-2" />
-            Bulk Upload
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Button
-          disabled={!isCourseCurriculumFormDataValid() || mediaUploadProgress}
-          onClick={handleNewLecture}
-        >
-          Add Lecture
+        <Button onClick={handleAddChapter} variant="outline">
+          Add Chapter
         </Button>
-        {mediaUploadProgress ? (
-          <MediaProgressbar
-            isMediaUploading={mediaUploadProgress}
-            progress={mediaUploadProgressPercentage}
-          />
-        ) : null}
-        <div className="mt-4 space-y-4">
-          {courseCurriculumFormData.map((curriculumItem, index) => (
-            <div className="border p-5 rounded-md">
-              <div className="flex gap-5 items-center">
-                <h3 className="font-semibold">Lecture {index + 1}</h3>
-                <Input
-                  name={`title-${index + 1}`}
-                  placeholder="Enter lecture title"
-                  className="max-w-96"
-                  onChange={(event) => handleCourseTitleChange(event, index)}
-                  value={courseCurriculumFormData[index]?.title}
-                />
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    onCheckedChange={(value) =>
-                      handleFreePreviewChange(value, index)
-                    }
-                    checked={courseCurriculumFormData[index]?.freePreview}
-                    id={`freePreview-${index + 1}`}
-                  />
-                  <Label htmlFor={`freePreview-${index + 1}`}>
-                    Free Preview
-                  </Label>
-                </div>
-              </div>
-              <div className="mt-6">
-                {courseCurriculumFormData[index]?.videoUrl ? (
-                  <div className="flex gap-3">
-                    <VideoPlayer
-                      url={courseCurriculumFormData[index]?.videoUrl}
-                      width="450px"
-                      height="200px"
-                    />
-                    <Button onClick={() => handleReplaceVideo(index)}>
-                      Replace Video
-                    </Button>
-                    <Button
-                      onClick={() => handleDeleteLecture(index)}
-                      className="bg-red-900"
-                    >
-                      Delete Lecture
-                    </Button>
-                  </div>
-                ) : (
-                  <Input
-                    type="file"
-                    accept="video/*"
-                    onChange={(event) =>
-                      handleSingleLectureUpload(event, index)
-                    }
-                    className="mb-4"
-                  />
-                )}
-              </div>
+      </CardHeader>
+                {mediaUploadProgress && (
+          <div className="mt-4">
+            <MediaProgressbar
+              isMediaUploading={mediaUploadProgress}
+              progress={mediaUploadProgressPercentage}
+            />
+          </div>
+        )}
+
+      <CardContent>
+        {!courseCurriculumFormData.length && (
+          <p className="text-center text-gray-500">No chapters added yet.</p>
+        )}
+
+        {Object.entries(chapters).map(([chapterNumber, chapter]) => (
+          <div key={chapterNumber} className="mb-8 border rounded-md p-4">
+            <div className="mb-4 flex items-center gap-4 flex-wrap">
+              <h3 className="text-xl font-semibold">Chapter {chapterNumber}</h3>
+              <Input
+                placeholder="Chapter Title"
+                value={chapter.title}
+                onChange={(e) => handleChapterTitleChange(e, Number(chapterNumber))}
+                className="max-w-lg flex-grow"
+              />
+              <Button onClick={() => handleAddLectureToChapter(Number(chapterNumber))}>
+                Add Lecture
+              </Button>
+
+              {/* Bulk upload input ẩn và nút riêng theo chapter */}
+<Input
+  type="file"
+  accept="video/*"
+  multiple
+  id={`bulk-upload-${chapterNumber}`}
+  ref={(el) => (bulkUploadInputRefs.current[chapterNumber] = el)}
+  onChange={(e) => handleMediaBulkUpload(e, Number(chapterNumber))}
+  className="hidden" // thay vì "hidden"
+/>
+<label
+  htmlFor={`bulk-upload-${chapterNumber}`}
+  className="inline-flex cursor-pointer items-center border rounded px-3 py-1 hover:bg-gray-100"
+>
+  <Upload className="w-4 h-5 mr-2" />
+  Bulk Upload
+</label>
             </div>
-          ))}
-        </div>
+
+            <div className="space-y-6">
+              {chapter.lectures.map((lecture) => (
+                <div
+                  key={lecture.index}
+                  className="border p-4 rounded-md flex flex-col gap-4"
+                >
+                  <div className="flex flex-wrap gap-5 items-center">
+                    <h4 className="font-semibold flex-shrink-0 w-full sm:w-auto">
+                      Lecture {chapter.lectures.indexOf(lecture) + 1}
+                    </h4>
+
+                    <Input
+                      name={`title-${lecture.index}`}
+                      placeholder="Enter lecture title"
+                      className="max-w-96 flex-grow"
+                      onChange={(e) => handleLectureTitleChange(e, lecture.index)}
+                      value={lecture.title}
+                    />
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        onCheckedChange={(value) =>
+                          handleFreePreviewChange(value, lecture.index)
+                        }
+                        checked={lecture.freePreview}
+                        id={`freePreview-${lecture.index}`}
+                      />
+                      <Label htmlFor={`freePreview-${lecture.index}`}>
+                        Free Preview
+                      </Label>
+                    </div>
+                  </div>
+                  <div>
+                    {lecture.videoUrl ? (
+                      <div className="flex flex-wrap gap-3">
+                        <VideoPlayer
+                          url={lecture.videoUrl}
+                          width="450px"
+                          height="200px"
+                        />
+                        <Button onClick={() => handleReplaceVideo(lecture.index)}>
+                          Replace Video
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteLecture(lecture.index)}
+                          className="bg-red-900"
+                        >
+                          Delete Lecture
+                        </Button>
+                      </div>
+                    ) : (
+                      <Input
+                        type="file"
+                        accept="video/*"
+                        onChange={(e) => handleSingleLectureUpload(e, lecture.index)}
+                        className="mb-4"
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+
+
       </CardContent>
     </Card>
   );

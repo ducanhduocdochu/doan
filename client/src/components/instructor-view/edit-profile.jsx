@@ -2,8 +2,11 @@ import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Pencil } from "lucide-react";
 import FormControls from "../common-form/form-controls";
+import { mediaUploadService, updateInstructorProfileService } from "@/services";
+import { toast } from "@/hooks/use-toast";
 
 function EditProfileDialog({ profile, setProfile }) {
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [formData, setFormData] = useState({
     bio: profile.instructor_profile.bio || "",
     occupation: profile.instructor_profile.occupation || "",
@@ -31,28 +34,53 @@ function EditProfileDialog({ profile, setProfile }) {
   ];
 
   const handleSave = async () => {
-    const payload = { ...formData };
 
     // Nếu có file mới cho CV
     if (formData.cv instanceof File) {
-      const form = new FormData();
-      form.append("file", formData.cv);
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", formData.cv);
+      const uploadRes = await mediaUploadService(formDataUpload, (percent) => {
+        setUploadProgress(percent);
+      });
 
-      try {
-        const uploadRes = await fetch("/api/upload-cv", {
-          method: "POST",
-          body: form,
-        });
-
-        const json = await uploadRes.json();
-        if (json.success) {
-          payload.cv = json.url;
-        } else {
-          console.error("Upload failed", json.message);
-        }
-      } catch (err) {
-        console.error("Upload error", err);
+      if (!uploadRes.success || !uploadRes.data.url) {
+        throw new Error("Upload cv thất bại");
       }
+      
+      console.log("url", uploadRes.data.url);
+      const updateRes = await updateInstructorProfileService({
+        ...formData,
+        cv: uploadRes.data.url,
+      });
+      console.log("updateRes", {
+        ...formData,
+        cv: uploadRes.data.url,
+      });
+
+      if (!updateRes.success) throw new Error("Update cv thất bại");
+
+      setProfile((prev) => ({
+        ...prev,
+        instructor_profile: {
+          ...prev.instructor_profile,
+          cv: uploadRes.data.url,
+        },
+      }));
+
+      toast({
+        title: "Thông tin đã được cập nhật",
+        description: "Thay đổi đã được lưu thành công.",
+        variant: "default",
+      });
+    }
+    else {
+      const updateRes = await updateInstructorProfileService(formData);
+      if (!updateRes.success) throw new Error("Update CV thất bại");
+       toast({
+        title: "Thông tin đã được cập nhật",
+        description: "Thay đổi đã được lưu thành công.",
+        variant: "default",
+      });
     }
 
     // Gửi payload lên server tại đây
@@ -63,7 +91,7 @@ function EditProfileDialog({ profile, setProfile }) {
       ...prev,
       instructor_profile: {
         ...prev.instructor_profile,
-        ...payload,
+        ...formData,
       },
     }));
   };

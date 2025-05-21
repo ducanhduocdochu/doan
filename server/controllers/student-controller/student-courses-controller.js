@@ -101,18 +101,18 @@ const getCoursesByStudentId = async (req, res) => {
     );
 
     const result = paginated.map(({ course }) => {
-      const discountPct = course.discount?.discount_pct || 0;
-      const pricingAfterDiscount = (
-        course.pricing - (discountPct * course.pricing) / 100
+      const discount_pct = course.discount?.discount_pct || 0;
+      const pricing_after_discount = (
+        course.pricing - (discount_pct * course.pricing) / 100
       ).toFixed(2);
 
       const ratingValues = course.ratings.map((r) => r.rating);
-      const ratingCount = ratingValues.length;
-      const averageRating =
-        ratingCount > 0
+      const rating_count = ratingValues.length;
+      const average_rating =
+        rating_count > 0
           ? Number(
               (
-                ratingValues.reduce((sum, r) => sum + r, 0) / ratingCount
+                ratingValues.reduce((sum, r) => sum + r, 0) / rating_count
               ).toFixed(1)
             )
           : 0;
@@ -127,13 +127,13 @@ const getCoursesByStudentId = async (req, res) => {
         description: course.description,
         image: course.image,
         pricing: course.pricing,
-        pricingAfterDiscount,
-        discountPct,
-        ratingCount,
-        averageRating,
+        pricing_after_discount: pricing_after_discount,
+        discount_pct: discount_pct,
+        rating_count: rating_count,
+        average_rating: average_rating,
         lectures: course.lectures,
-        instructorName: course.instructor?.user_name || "Unknown",
-        createdAt: course.created_at,
+        instructor_name: course.instructor?.user_name || "Unknown",
+        created_at: course.created_at,
       };
     });
 

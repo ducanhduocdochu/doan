@@ -202,7 +202,6 @@ export async function getInstructorProfileService(userId) {
 }
 
 export async function updateInstructorProfileService(updatedData) {
-  console.log("updateInstructorProfileService", updatedData);
   const { data } = await axiosInstance.put(
     `/profile/update-user`,
     updatedData

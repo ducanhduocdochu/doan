@@ -1,13 +1,13 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-// GET /student/course?category=&level=&primaryLanguage=&sortBy=
+// GET /student/course?category=&level=&primary_language=&sortBy=
 const getAllStudentViewCourses = async (req, res) => {
   try {
     const {
       category = "",
       level = "",
-      primaryLanguage = "",
+      primary_language = "",
       sortBy = "price-lowtohigh",
       page = 1,
       limit = 6,
@@ -26,9 +26,9 @@ const getAllStudentViewCourses = async (req, res) => {
       filters.AND.push({ level: { in: level.split(",") } });
     }
 
-    if (primaryLanguage) {
+    if (primary_language) {
       filters.AND.push({
-        primary_language: { in: primaryLanguage.split(",") },
+        primary_language: { in: primary_language.split(",") },
       });
     }
 
@@ -86,28 +86,28 @@ const getAllStudentViewCourses = async (req, res) => {
     ]);
 
     const coursesWithRating = coursesList.map((course) => {
-      const discountPct = course.discount ? course.discount.discount_pct : 0;
-      const pricingAfterDiscount = (
+      const discount_pct = course.discount ? course.discount.discount_pct : 0;
+      const pricing_after_discount = (
         course.pricing -
-        (discountPct * course.pricing) / 100
+        (discount_pct * course.pricing) / 100
       ).toFixed(2);
       const ratingValues = course.ratings.map((r) => r.rating);
-      const ratingCount = ratingValues.length;
-      const averageRating =
-        ratingCount > 0
+      const rating_count = ratingValues.length;
+      const average_rating =
+        rating_count > 0
           ? Number(
               (
-                ratingValues.reduce((sum, r) => sum + r, 0) / ratingCount
+                ratingValues.reduce((sum, r) => sum + r, 0) / rating_count
               ).toFixed(1)
             )
           : 0;
 
       return {
         ...course,
-        pricingAfterDiscount,
-        discountPct,
-        averageRating,
-        ratingCount,
+        pricing_after_discount,
+        discount_pct,
+        average_rating,
+        rating_count,
       };
     });
 
@@ -170,21 +170,21 @@ const getStudentViewCourseDetails = async (req, res) => {
       });
     }
 
-    const discountPct = courseDetails.discount
+    const discount_pct = courseDetails.discount
       ? courseDetails.discount.discount_pct
       : 0;
-    const pricingAfterDiscount = (
-      courseDetails.pricing - (discountPct * courseDetails.pricing) / 100
+    const pricing_after_discount = (
+      courseDetails.pricing - (discount_pct * courseDetails.pricing) / 100
     ).toFixed(2);
     const ratingValues = courseDetails.ratings.map((r) => r.rating);
-    const ratingCount = ratingValues.length;
-    const averageRating =
-      ratingCount > 0
-        ? Number((ratingValues.reduce((sum, r) => sum + r, 0) / ratingCount).toFixed(1))
+    const rating_count = ratingValues.length;
+    const average_rating =
+      rating_count > 0
+        ? Number((ratingValues.reduce((sum, r) => sum + r, 0) / rating_count).toFixed(1))
         : 0;
 
     // Check yêu thích
-    let isFavorite = false;
+    let is_favorite = false;
     const favorite = await prisma.favoriteCourse.findUnique({
       where: {
         user_id_course_id: {
@@ -193,10 +193,10 @@ const getStudentViewCourseDetails = async (req, res) => {
         },
       },
     });
-    isFavorite = !!favorite;
+    is_favorite = !!favorite;
 
     // Check giỏ hàng
-    let isInCart = false;
+    let is_in_cart = false;
     const cartItem = await prisma.cartCourse.findUnique({
       where: {
         user_id_course_id: {
@@ -205,18 +205,18 @@ const getStudentViewCourseDetails = async (req, res) => {
         },
       },
     });
-    isInCart = !!cartItem;
+    is_in_cart = !!cartItem;
 
     return res.status(200).json({
       success: true,
       data: {
         ...courseDetails,
-        pricingAfterDiscount,
-        discountPct,
-        averageRating,
-        ratingCount,
-        isFavorite,
-        isInCart,
+        pricing_after_discount,
+        discount_pct,
+        average_rating,
+        rating_count,
+        is_favorite,
+        is_in_cart,
       },
     });
   } catch (e) {
@@ -342,9 +342,9 @@ const getFavoriteCourses = async (req, res) => {
     });
 
     const result = favorites.map(({ course }) => {
-      const discountPct = course.discount ? course.discount.discount_pct : 0;
-      const pricingAfterDiscount = (
-        course.pricing - (discountPct * course.pricing) / 100
+      const discount_pct = course.discount ? course.discount.discount_pct : 0;
+      const pricing_after_discount = (
+        course.pricing - (discount_pct * course.pricing) / 100
       ).toFixed(2);
       const ratingValues = course.ratings.map((r) => r.rating);
       const ratingCount = ratingValues.length;
@@ -359,8 +359,8 @@ const getFavoriteCourses = async (req, res) => {
 
       return {
         ...course,
-        discountPct,
-        pricingAfterDiscount,
+        discount_pct,
+        pricing_after_discount,
         averageRating,
         ratingCount,
       };
@@ -382,7 +382,7 @@ const getCartCourses = async (req, res) => {
   const {
     category = "",
     level = "",
-    primaryLanguage = "",
+    primary_language = "",
     sortBy = "title-atoz",
     search = "",
     page = 1,
@@ -402,8 +402,8 @@ const getCartCourses = async (req, res) => {
     if (level) {
       filters.AND.push({ level: { in: level.split(",") } });
     }
-    if (primaryLanguage) {
-      filters.AND.push({ primary_language: { in: primaryLanguage.split(",") } });
+    if (primary_language) {
+      filters.AND.push({ primary_language: { in: primary_language.split(",") } });
     }
 
     if (search) {
@@ -458,9 +458,9 @@ const getCartCourses = async (req, res) => {
     ]);
 
     const result = courses.map((course) => {
-      const discountPct = course.discount ? course.discount.discount_pct : 0;
-      const pricingAfterDiscount = (
-        course.pricing - (discountPct * course.pricing) / 100
+      const discount_pct = course.discount ? course.discount.discount_pct : 0;
+      const pricing_after_discount = (
+        course.pricing - (discount_pct * course.pricing) / 100
       ).toFixed(2);
       const ratingValues = course.ratings.map((r) => r.rating);
       const ratingCount = ratingValues.length;
@@ -471,8 +471,8 @@ const getCartCourses = async (req, res) => {
 
       return {
         ...course,
-        discountPct,
-        pricingAfterDiscount,
+        discount_pct,
+        pricing_after_discount,
         averageRating,
         ratingCount,
       };
@@ -514,27 +514,27 @@ const getPurchasedCourses = async (req, res) => {
     });
 
     const result = purchased.map(({ course }) => {
-      const discountPct = course.discount ? course.discount.discount_pct : 0;
-      const pricingAfterDiscount = (
-        course.pricing - (discountPct * course.pricing) / 100
+      const discount_pct = course.discount ? course.discount.discount_pct : 0;
+      const pricing_after_discount = (
+        course.pricing - (discount_pct * course.pricing) / 100
       ).toFixed(2);
       const ratingValues = course.ratings.map((r) => r.rating);
-      const ratingCount = ratingValues.length;
-      const averageRating =
-        ratingCount > 0
+      const rating_count = ratingValues.length;
+      const average_rating =
+        rating_count > 0
           ? Number(
               (
-                ratingValues.reduce((sum, r) => sum + r, 0) / ratingCount
+                ratingValues.reduce((sum, r) => sum + r, 0) / rating_count
               ).toFixed(1)
             )
           : 0;
 
       return {
         ...course,
-        discountPct,
-        pricingAfterDiscount,
-        averageRating,
-        ratingCount,
+        discount_pct,
+        pricing_after_discount,
+        average_rating,
+        rating_count,
       };
     });
 

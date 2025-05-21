@@ -6,11 +6,11 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { AuthContext } from "@/context/auth-context";
 import { InstructorContext } from "@/context/instructor-context";
 import { fetchInstructorCourseListService } from "@/services";
-import { BarChart, Book, DollarSign, FileText, LogOut, Settings, Upload, UserCircle, Users } from "lucide-react";
+import { BarChart, Book, DollarSign, FileText, LogOut, Settings, Tag, Upload, UserCircle, Users } from "lucide-react";
 import { useContext, useEffect, useState } from "react";
 
 function InstructorDashboardpage() {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("profile");
   const { resetCredentials } = useContext(AuthContext);
   const { instructorCoursesList, setInstructorCoursesList } =
     useContext(InstructorContext);
@@ -18,19 +18,19 @@ function InstructorDashboardpage() {
   async function fetchAllCourses() {
     const response = await fetchInstructorCourseListService();
     console.log(response, "response");
-    if (response?.success) setInstructorCoursesList(response?.data);
+    if (response?.success) setInstructorCoursesList(response?.data?.courses || []);
   }
 
   useEffect(() => {
     fetchAllCourses();
   }, []);
 
- const menuItems = [
+const menuItems = [
   {
     icon: UserCircle,
     label: "Profile",
     value: "profile",
-    component: <InstructorProfile />,
+    component: <InstructorProfile listOfCourses={instructorCoursesList} />,
   },
   {
     icon: BarChart,
@@ -42,13 +42,7 @@ function InstructorDashboardpage() {
     icon: Book,
     label: "Courses",
     value: "courses",
-    // component: <InstructorCourses listOfCourses={instructorCoursesList} />,
-  },
-  {
-    icon: FileText,
-    label: "Assignments",
-    value: "assignments",
-    component: <div>Assignments Management (Coming soon)</div>,
+    component: <InstructorCourses listOfCourses={instructorCoursesList} />,
   },
   {
     icon: Users,
@@ -69,6 +63,12 @@ function InstructorDashboardpage() {
     component: <div>Upload and Manage Resources (Coming soon)</div>,
   },
   {
+    icon: Tag, 
+    label: "Promotions",
+    value: "promotions",
+    component: <div>Promotion Management (Coming soon)</div>,
+  },
+  {
     icon: Settings,
     label: "Settings",
     value: "settings",
@@ -81,6 +81,7 @@ function InstructorDashboardpage() {
     component: null,
   },
 ];
+
 
   function handleLogout() {
     resetCredentials();
@@ -117,7 +118,8 @@ function InstructorDashboardpage() {
         <div className="max-w-7xl mx-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             {menuItems.map((menuItem) => (
-              <TabsContent value={menuItem.value}>
+
+              <TabsContent  value={menuItem.value}>
                 {menuItem.component !== null ? menuItem.component : null}
               </TabsContent>
             ))}

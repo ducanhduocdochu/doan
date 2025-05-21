@@ -15,7 +15,7 @@ import { useContext } from "react";
 
 const defaultAvatarUrl = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 
-function ReviewsSection({ studentViewCourseDetails, renderStars }) {
+function ReviewsSection({ studentViewCourseDetails, renderStars, isStudent = true }) {
   const { auth } = useContext(AuthContext);
 
   const [showDialog, setShowDialog] = useState(false);
@@ -29,14 +29,14 @@ function ReviewsSection({ studentViewCourseDetails, renderStars }) {
   // Component con để hiển thị 1 review có avatar
   const ReviewItem = ({ review }) => {
     const user = review.user || {};
-    const avatarUrl = user.avatarUrl || defaultAvatarUrl;
+    const avatar_url = user.avatar_url || defaultAvatarUrl;
 
     return (
       <li className="border rounded-lg p-4 bg-white shadow-sm" key={review.id}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             <img
-              src={avatarUrl}
+              src={avatar_url}
               alt="Avatar"
               className="w-10 h-10 rounded-full object-cover"
               onError={(e) => {
@@ -53,7 +53,7 @@ function ReviewsSection({ studentViewCourseDetails, renderStars }) {
             </div>
           </div>
           <span className="text-sm text-gray-600">
-            {new Date(review.createdAt).toLocaleDateString("vi-VN")}
+            {new Date(review.created_at).toLocaleDateString("vi-VN")}
           </span>
         </div>
         <div className="flex items-center mb-2">
@@ -119,6 +119,7 @@ function ReviewsSection({ studentViewCourseDetails, renderStars }) {
       )}
 
       {/* Gửi đánh giá */}
+      {isStudent && 
       <div className="mt-8 border rounded p-6 bg-white shadow-sm">
         <h3 className="text-lg font-semibold mb-4">Gửi đánh giá của bạn</h3>
 
@@ -146,7 +147,7 @@ function ReviewsSection({ studentViewCourseDetails, renderStars }) {
         />
 
         <Button onClick={handleSubmitReview}>Gửi đánh giá</Button>
-      </div>
+      </div>}
 
       {/* Dialog hiển thị tất cả đánh giá */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>

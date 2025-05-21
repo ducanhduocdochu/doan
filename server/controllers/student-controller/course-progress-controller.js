@@ -99,7 +99,7 @@ const getCurrentCourseProgress = async (req, res) => {
     if (!purchased) {
       return res.status(200).json({
         success: true,
-        data: { isPurchased: false },
+        data: { is_purchased: false },
         message: "You need to purchase this course to access it.",
       });
     }
@@ -132,7 +132,7 @@ const getCurrentCourseProgress = async (req, res) => {
         data: {
           courseDetails: courseDetails,
           progress: [],
-          isPurchased: true,
+          is_purchased: true,
         },
       });
     }
@@ -144,7 +144,7 @@ const getCurrentCourseProgress = async (req, res) => {
         progress: progress.lectures,
         completed: progress.completed,
         completionDate: progress.completion_date,
-        isPurchased: true,
+        is_purchased: true,
       },
     });
   } catch (error) {

@@ -42,6 +42,9 @@ model Course {
   pricing          Decimal  @db.Decimal(10, 2)
   objectives       String   @db.Text 
   is_published     Boolean  @default(false)
+  full_description  String?  @db.Text 
+  requirements     String?  @db.Text 
+  target_students   String?  @db.Text 
 
   instructor       User?    @relation("InstructorCourses", fields: [instructor_id], references: [id])
   lectures         CourseLecture[]
@@ -55,6 +58,13 @@ model Course {
   in_cart_by_users CartCourse[]
 }
 
+enum ContentType {
+  VIDEO
+  QUIZ
+  DOCUMENT
+}
+
+
 model CourseLecture {
   id           String  @id
   course_id    String
@@ -62,8 +72,14 @@ model CourseLecture {
   video_url    String
   public_id    String
   free_preview Boolean @default(false)
-  chapterNumber Int?    
-  chapterTitle  String? 
+  chapter_number Int?    
+  chapter_title  String? 
+
+  content_type  ContentType @default(VIDEO)
+  content_url   String?     // link tài liệu, bài viết hoặc audio...
+  duration      Int?        // thời lượng tính bằng giây
+  description   String?     // mô tả chi tiết bài học
+  order         Int         // thứ tự hiển thị trong chapter hoặc course
 
   course       Course  @relation(fields: [course_id], references: [id])
 }
@@ -168,7 +184,7 @@ model FavoriteCourse {
   id        Int    @id @default(autoincrement())
   user_id   String
   course_id String
-  createdAt DateTime @default(now())
+  created_at DateTime @default(now())
 
   user      User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   course    Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
@@ -182,7 +198,7 @@ model CourseRating {
   course_id  String
   rating     Int      // từ 1 đến 5
   comment    String?  // có thể có hoặc không
-  createdAt  DateTime @default(now())
+  created_at  DateTime @default(now())
 
   user   User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   course Course @relation(fields: [course_id], references: [id], onDelete: Cascade)
@@ -205,7 +221,7 @@ model CartCourse {
   id        Int      @id @default(autoincrement())
   user_id   String
   course_id String
-  createdAt DateTime @default(now())
+  created_at DateTime @default(now())
 
   user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   course    Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)

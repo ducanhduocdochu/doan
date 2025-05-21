@@ -252,6 +252,28 @@ export const courseLandingPageFormControls = [
     componentType: "textarea",
     placeholder: "Welcome message for students",
   },
+  {
+  name: "requirements",
+  label: "Requirements",
+  componentType: "textarea",
+  type: "text",
+  placeholder: "List course requirements (1 per line)",
+},
+{
+  name: "fullDescription",
+  label: "Full Description",
+  componentType: "textarea",
+  type: "text",
+  placeholder: "Detailed course description",
+},
+{
+  name: "targetStudents",
+  label: "Target Students",
+  componentType: "textarea",
+  type: "text",
+  placeholder: "List target students (1 per line)",
+},
+
 ];
 
 export const courseLandingInitialFormData = {
@@ -265,14 +287,20 @@ export const courseLandingInitialFormData = {
   objectives: "",
   welcomeMessage: "",
   image: "",
+  requirements: "",
+  fullDescription: "",
+  targetStudents: "",
+  is_published: false,
 };
 
 export const courseCurriculumInitialFormData = [
   {
     title: "",
-    videoUrl: "",
-    freePreview: false,
+    video_url: "",
+    free_preview: false,
     public_id: "",
+    chaper_number: "",
+    chaper_title: "",
   },
 ];
 

@@ -242,11 +242,10 @@ function StudentViewCourseDetailsPage() {
             {studentViewCourseDetails?.primaryLanguage}
           </span>
           <span>
-            {/* {studentViewCourseDetails?.students.length}{" "}
-          {studentViewCourseDetails?.students.length <= 1
+            {studentViewCourseDetails?.students.length}{" "}
+          {studentViewCourseDetails?.course_students.length <= 1
             ? "Student"
-            : "Students"} */}
-            0 students
+            : "Students"}
           </span>
         </div>
         <div className="flex items-center space-x-4 mt-2 text-sm flex-wrap">
