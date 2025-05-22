@@ -75,11 +75,9 @@ model CourseLecture {
   chapter_number Int?    
   chapter_title  String? 
 
-  content_type  ContentType @default(VIDEO)
-  content_url   String?     // link tài liệu, bài viết hoặc audio...
-  duration      Int?        // thời lượng tính bằng giây
-  description   String?     // mô tả chi tiết bài học
-  order         Int         // thứ tự hiển thị trong chapter hoặc course
+  duration      Int?        
+  description   String?     
+  order         Int         
 
   course       Course  @relation(fields: [course_id], references: [id])
 }

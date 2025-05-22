@@ -32,8 +32,6 @@ function AddNewCoursePage() {
   const navigate = useNavigate();
   const params = useParams();
 
-  console.log(params);
-
   function isEmpty(value) {
     if (Array.isArray(value)) {
       return value.length === 0;
@@ -45,22 +43,24 @@ function AddNewCoursePage() {
   function validateFormData() {
     for (const key in courseLandingFormData) {
       if (isEmpty(courseLandingFormData[key])) {
+        console.log(key, "courseLandingFormData[key]");
         return false;
       }
     }
 
     let hasFreePreview = false;
 
+
     for (const item of courseCurriculumFormData) {
       if (
         isEmpty(item.title) ||
-        isEmpty(item.videoUrl) ||
+        isEmpty(item.video_url) ||
         isEmpty(item.public_id)
       ) {
         return false;
       }
 
-      if (item.freePreview) {
+      if (item.free_preview) {
         hasFreePreview = true; //found at least one free preview
       }
     }
@@ -68,16 +68,19 @@ function AddNewCoursePage() {
     return hasFreePreview;
   }
 
+  console.log(auth, "auth");
+
   async function handleCreateCourse() {
     const courseFinalFormData = {
-      instructorId: auth?.user?._id,
-      instructorName: auth?.user?.userName,
+      instructor_id: auth?.user?.id,
+      instructor_name: auth?.user?.user_name,
       date: new Date(),
       ...courseLandingFormData,
       students: [],
-      curriculum: courseCurriculumFormData,
+      lectures: courseCurriculumFormData,
     };
 
+    console.log(courseFinalFormData, "courseFinalFormData");
     const response =
       currentEditedCourseId !== null
         ? await updateCourseByIdService(
@@ -86,7 +89,6 @@ function AddNewCoursePage() {
           )
         : await addNewCourseService(courseFinalFormData);
 
-    console.log(response, "response");
 
     if (response?.success) {
       setCourseLandingFormData(courseLandingInitialFormData);
@@ -112,9 +114,11 @@ function AddNewCoursePage() {
         return acc;
       }, {});
 
+      console.log(setCourseFormData, "setCourseFormData");
+
       console.log(setCourseFormData, response?.data, "setCourseFormData");
       setCourseLandingFormData(setCourseFormData);
-      setCourseCurriculumFormData(response?.data?.curriculum);
+      setCourseCurriculumFormData(response?.data?.lectures);
     }
 
     console.log(response, "response");

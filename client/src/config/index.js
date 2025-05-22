@@ -211,7 +211,7 @@ export const courseLandingPageFormControls = [
     options: courseLevelOptions,
   },
   {
-    name: "primaryLanguage",
+    name: "primary_language",
     label: "Primary Language",
     componentType: "select",
     type: "text",
@@ -247,7 +247,7 @@ export const courseLandingPageFormControls = [
     placeholder: "Enter course objectives",
   },
   {
-    name: "welcomeMessage",
+    name: "welcome_message",
     label: "Welcome Message",
     componentType: "textarea",
     placeholder: "Welcome message for students",
@@ -260,14 +260,14 @@ export const courseLandingPageFormControls = [
   placeholder: "List course requirements (1 per line)",
 },
 {
-  name: "fullDescription",
+  name: "full_description",
   label: "Full Description",
   componentType: "textarea",
   type: "text",
   placeholder: "Detailed course description",
 },
 {
-  name: "targetStudents",
+  name: "target_students",
   label: "Target Students",
   componentType: "textarea",
   type: "text",
@@ -280,16 +280,16 @@ export const courseLandingInitialFormData = {
   title: "",
   category: "",
   level: "",
-  primaryLanguage: "",
+  primary_language: "",
   subtitle: "",
   description: "",
   pricing: "",
   objectives: "",
-  welcomeMessage: "",
+  welcome_message: "",
   image: "",
   requirements: "",
-  fullDescription: "",
-  targetStudents: "",
+  full_description: "",
+  target_students: "",
   is_published: false,
 };
 
@@ -299,8 +299,11 @@ export const courseCurriculumInitialFormData = [
     video_url: "",
     free_preview: false,
     public_id: "",
-    chaper_number: "",
-    chaper_title: "",
+    chapter_number: 1,
+    chapter_title: "",
+    duration: 0,
+    description: "",
+    order: 0,
   },
 ];
 
@@ -314,7 +317,7 @@ export const sortOptions = [
 export const filterOptions = {
   category: courseCategories,
   level: courseLevelOptions,
-  primaryLanguage: languageOptions,
+  primary_language: languageOptions,
 };
 
 export const getLevelColor = (level) => {

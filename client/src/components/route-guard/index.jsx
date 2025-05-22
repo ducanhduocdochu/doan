@@ -17,7 +17,7 @@ function RouteGuard({ authenticated, user, element }) {
   }
 
   // ❌ Đã đăng nhập nhưng chưa verify → Chuyển về trang unverified
-  if (authenticated && user?.isVerify === false && !isAtUnverified) {
+  if (authenticated && user?.is_verify === false && !isAtUnverified) {
     return <Navigate to="/auth/unverified" />;
   }
 

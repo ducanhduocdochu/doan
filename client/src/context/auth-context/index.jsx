@@ -79,8 +79,8 @@ export default function AuthProvider({ children }) {
           user: data.data.user,
         });
 
-        const { role, isVerify } = data.data.user;
-        if (!isVerify) {
+        const { role, is_verify } = data.data.user;
+        if (!is_verify) {
           navigate("/auth/unverified");
         } else if (role === "instructor") {
           navigate("/instructor");

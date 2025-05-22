@@ -87,7 +87,7 @@ const registerInstructor = async (req, res) => {
       data: {
         userId: createdUser.id,
         instructorProfileId: createdUser.instructor_profile.id,
-        isVerify: createdUser.instructor_profile.is_verify,
+        is_verify: createdUser.instructor_profile.is_verify,
       },
     });
   } catch (error) {
@@ -181,10 +181,10 @@ const loginUser = async (req, res) => {
     const accessToken = jwt.sign(
       {
         id: checkUser.id,
-        userName: checkUser.user_name,
-        userEmail: checkUser.user_email,
+        user_name: checkUser.user_name,
+        user_email: checkUser.user_email,
         role: checkUser.role,
-        isVerify: checkUser.is_verify,
+        is_verify: checkUser.is_verify,
       },
       process.env.JWT_SECRET || "your_fallback_secret",
       { expiresIn: "120m" }
@@ -197,10 +197,10 @@ const loginUser = async (req, res) => {
         accessToken,
         user: {
           id: checkUser.id,
-          userName: checkUser.user_name,
-          userEmail: checkUser.user_email,
+          user_name: checkUser.user_name,
+          user_email: checkUser.user_email,
           role: checkUser.role,
-          isVerify: checkUser.is_verify,
+          is_verify: checkUser.is_verify,
         },
       },
     });

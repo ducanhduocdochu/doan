@@ -73,16 +73,16 @@ function CourseSettings() {
         <div className="flex items-center space-x-2 mt-4">
   <input
     type="checkbox"
-    id="isPublished"
-    checked={courseLandingFormData?.isPublished || false}
+    id="is_published"
+    checked={courseLandingFormData?.is_published || false}
     onChange={(e) =>
       setCourseLandingFormData({
         ...courseLandingFormData,
-        isPublished: e.target.checked,
+        is_published: e.target.checked,
       })
     }
   />
-  <Label htmlFor="isPublished">Publish this course</Label>
+  <Label htmlFor="is_published">Publish this course</Label>
 </div>
       </CardContent>
     </Card>

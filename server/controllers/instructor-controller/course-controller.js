@@ -11,7 +11,7 @@ const addNewCourse = async (req, res) => {
       data: {
         id: courseData.id || require("crypto").randomUUID(),
         instructor_id: instructor.id,
-        instructor_name: instructor.userName,
+        instructor_name: instructor.user_name,
         created_at: new Date(),
         title: courseData.title,
         category: courseData.category,
@@ -24,9 +24,23 @@ const addNewCourse = async (req, res) => {
         pricing: courseData.pricing,
         objectives: courseData.objectives,
         is_published: courseData.is_published || false,
-        targetStudents: courseData.target_students,
+        target_students: courseData.target_students,
         requirements: courseData.requirements,
-        fullDescription: courseData.full_description,
+        full_description: courseData.full_description,
+        lectures: {
+      create: courseData.lectures.map((lec) => ({
+        id: lec.id || require("crypto").randomUUID(),
+        title: lec.title,
+        video_url: lec.video_url,
+        public_id: lec.public_id || "",
+        free_preview: lec.free_preview || false,
+        chapter_number: lec.chapter_number || 1,
+        chapter_title: lec.chapter_title || "",
+        duration: lec.duration || 0,
+        description: lec.description || "",
+        order: lec.order || 0,
+      })),
+    },
       },
     });
 
@@ -181,7 +195,12 @@ const getCourseDetailsByID = async (req, res) => {
 
     const courseDetails = await prisma.course.findUnique({
       where: { id },
+           include: {
+        lectures: true,
+      },
     });
+
+    console.log(courseDetails, "courseDetails");
 
     if (!courseDetails) {
       return res.status(404).json({
